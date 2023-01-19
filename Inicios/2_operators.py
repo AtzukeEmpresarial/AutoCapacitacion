@@ -28,6 +28,6 @@ print("Hola" == "python")
 print("Hola" != "python")
 
 #operadores logicos son and y or, simple :v
-print(not(3<4))
+print(3 >= 4)
 
 
