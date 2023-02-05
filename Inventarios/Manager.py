@@ -18,7 +18,7 @@ class Manager(ctk.CTk):
             expand = True,
         )
         #color de fondo, numero y tamaño de las columnas
-        container.configure(background= style.BACKGROUND)
+        #container.configure(fg_color = style.BACKGROUND)
         container.grid_columnconfigure(0, weight=1)
         container.grid_rowconfigure(0,weight=1)
 
