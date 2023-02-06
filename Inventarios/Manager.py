@@ -26,12 +26,12 @@ class Manager(ctk.CTk):
         self.frames = {}
         for F in (Login, MenuLog, Process):
             frame = F(container, self)
-            self.frames[F] = frame
-            if frame == Login:    
+            if F == Login:    
                 frame.grid(row = 0, column = 0, sticky = ctk.NSEW)
             else:
-                frame.grid(row = 0, column = 1, sticky = ctk.NSEW)       
-        self.show_frame(Process)
+                frame.grid(row = 0, column = 1, sticky = ctk.NSEW)
+            self.frames[F] = frame       
+        self.show_frame(Login)
 
     def show_frame(self, window):
         frame = self.frames[window]
