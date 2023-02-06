@@ -1,10 +1,14 @@
 BACKGROUND = "#5B8FB9"
-FONT = ("Roboto", 16, "bold")
+FONT = ("Roboto", 16)
+FONTTITLES = ("Roboto", 24, "bold")
 COMPONENT = "#5B8FB9"
-TEXT = "#000000"
+TEXT = "#FFFFFF"
 
-STYLE = {
+STYLELABEL = {
     "font" : FONT,
-    "fg_color": COMPONENT,
+    "text_color": TEXT
+}
+STYLELABELTITLES = {
+    "font" : FONTTITLES,
     "text_color": TEXT
 }
