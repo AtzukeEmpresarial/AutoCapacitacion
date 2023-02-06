@@ -12,3 +12,5 @@ STYLELABELTITLES = {
     "font" : FONTTITLES,
     "text_color": TEXT
 }
+
+SIDE_BAR_COLOR = "#000000"

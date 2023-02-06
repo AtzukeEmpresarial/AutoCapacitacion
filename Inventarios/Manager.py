@@ -4,7 +4,9 @@ import customtkinter as ctk
 #se importan las constantes que se usaran repetidamente en la creación del contenedor principal.
 from constants import style
 #Se importan las pantallas que se veran reflejeadas en el contenerdor.
-from screen import Login, MenuLog, Process
+from Screens.menu_login import menu_login
+from Screens.menu_process import menu_process
+from Screens.side_bar import side_bar
 
 class Manager(ctk.CTk):
 
@@ -24,14 +26,14 @@ class Manager(ctk.CTk):
         container.grid_rowconfigure(0,weight=1)
 
         self.frames = {}
-        for F in (Login, MenuLog, Process):
+        for F in (side_bar, menu_login, menu_process):
             frame = F(container, self)
-            if F == Login:    
+            if F == side_bar:    
                 frame.grid(row = 0, column = 0, sticky = ctk.NSEW)
             else:
                 frame.grid(row = 0, column = 1, sticky = ctk.NSEW)
             self.frames[F] = frame       
-        self.show_frame(Login)
+        self.show_frame(side_bar)
 
     def show_frame(self, window):
         frame = self.frames[window]

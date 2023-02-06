@@ -10,7 +10,7 @@ try:
 except pyodbc.InterfaceError:
     print("usuario y/o contraseña no validos")
     sys.exit()
-sql_prueba = f'''SELECT OFICINA FROM MATLIBRAMD.MATFFGNPLA '''
+sql_prueba = f'''SELECT * FROM VISIONR.XBKNAM '''
 query1 = pd.read_sql(sql_prueba,cnx_nac)
 
 save_path = 'salidas/'    

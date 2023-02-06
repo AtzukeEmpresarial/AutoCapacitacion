@@ -4,24 +4,29 @@ import customtkinter as ctk
 
 #Se importan valores constantes de nuestra aplicación
 from constants import style
+from Screens.menu_login import menu_login
+from Screens.menu_process import menu_process
 
 
 #Se crean las diferentes pantallas
-class Login(ctk.CTkFrame):
+class side_bar(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
         #self.configure(fg_color = style.BACKGROUND)
+        side_bar_color = style.SIDE_BAR_COLOR
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4,weight=1)
-        self.init_widgets()
+        self.init_widgets(side_bar_color)
     
     def set_login_frame(self):
-            self.controller.show_frame(MenuLog)
-    def set_process_frame(self):
-            self.controller.show_frame(Process)
+            self.controller.show_frame(menu_login)
+            style.SIDE_BAR_COLOR = "#FFFFFF"
 
-    def init_widgets(self):
+    def set_process_frame(self):
+            self.controller.show_frame(menu_process)
+
+    def init_widgets(self, side_bar_color):
         lb_tittle = ctk.CTkLabel(
             self,
             text = "INVENTARIOS",
@@ -35,47 +40,32 @@ class Login(ctk.CTkFrame):
             )
         flogin_option = ctk.CTkFrame(self, corner_radius=0)
         flogin_option.grid(row = 2, column = 0, sticky = ctk.NSEW)
-        lb_login = ctk.CTkButton(
+        bt_login = ctk.CTkButton(
             flogin_option,
             text = "LOG IN",
             **style.STYLELABELTITLES,
+            fg_color = side_bar_color,
             hover =True,
-            command= self.set_login_frame
+            command= self.set_login_frame,
         )
-        lb_login.grid(
+        bt_login.grid(
             row = 0, 
             padx = 20,
             pady = 20
         )
-        lb_login.pack(fill = ctk.BOTH, expand = True)
+        bt_login.pack(fill = ctk.BOTH, expand = True)
         fprocesar_option = ctk.CTkFrame(self, corner_radius=0)
         fprocesar_option.grid(row = 3, column = 0, sticky = ctk.NSEW)
-        lb_procesar = ctk.CTkButton(
+        bt_procesar = ctk.CTkButton(
             fprocesar_option,
             text = "PROCESAR",
             **style.STYLELABELTITLES,
             hover =True,
             command= self.set_process_frame
         )
-        lb_procesar.grid(
+        bt_procesar.grid(
             row = 0, 
             padx = 20,
             pady = 20
         ) 
-        lb_procesar.pack(fill = ctk.BOTH, expand = True)   
-
-class MenuLog(ctk.CTkFrame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        self.configure(fg_color = style.BACKGROUND)
-        self.controller = controller
-
-class Process(ctk.CTkFrame):
-    def __init__(self, parent, controller):
-        super().__init__(parent)
-        self.configure(fg_color = "#FFFFFF")
-        self.controller = controller
-     
-
-
-
+        bt_procesar.pack(fill = ctk.BOTH, expand = True)   
