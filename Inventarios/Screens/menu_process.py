@@ -8,6 +8,6 @@ from constants import style
 class menu_process(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
-        self.configure(fg_color = "#FFFFFF")
+        self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
      

@@ -7,6 +7,7 @@ from constants import style
 from Screens.menu_login import menu_login
 from Screens.menu_process import menu_process
 from Screens.side_bar import side_bar
+from Screens.menu_principal import menu_principal
 
 class Manager(ctk.CTk):
 
@@ -14,7 +15,7 @@ class Manager(ctk.CTk):
         super().__init__(*args, **kwargs)
         self.title("Inventarios Tarjetas")
         container = ctk.CTkFrame(self)
-        self.geometry("1100x580")
+        self.geometry("1100x580+125+80")
         container.pack(
             side = ctk.TOP,
             fill = ctk.BOTH,
@@ -26,7 +27,7 @@ class Manager(ctk.CTk):
         container.grid_rowconfigure(0,weight=1)
 
         self.frames = {}
-        for F in (side_bar, menu_login, menu_process):
+        for F in (side_bar, menu_login, menu_process,menu_principal):
             frame = F(container, self)
             if F == side_bar:    
                 frame.grid(row = 0, column = 0, sticky = ctk.NSEW)

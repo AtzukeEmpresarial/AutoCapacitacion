@@ -70,7 +70,7 @@ class side_bar(ctk.CTkFrame):
         bt_login.pack(
               fill = ctk.BOTH, 
               expand = True
-              )
+        )
         
         fprocesar_option = ctk.CTkFrame(
               self, 
