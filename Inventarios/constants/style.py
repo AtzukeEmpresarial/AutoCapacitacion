@@ -1,10 +1,11 @@
-GRAY = "#313131"
+GRAY = "#212121" #GRIS OSCURO
 WHITE = "#FFFFFF"
 BLACK = "#000000"
-SOMEBLUE = "#5B8FB9"
+SOMEBLUE = "#0078D4"
 GRAYWHITE = "#A0A0A0"
 LIGHTGRAY = "#ABABAB"
 GRAYBLACK = "#2A2A2A"
+TEA = "#00ADB5"
 FONT = "Calibri Bold"
 
 BACKGROUND = GRAYWHITE
@@ -36,17 +37,18 @@ BUTTONSTYLE = {
     "hover_color" : GRAYWHITE,
     "hover" : True
 }
-REALBUTTONSTYLE = {
-    "font" : FONTBUTTON,
-    "fg_color" : WHITE,
-    "text_color" : BLACK,
-    "hover_color" : GRAYWHITE,
-    "hover" : True
-}
 ALTER_BUTTONSTYLE = {
     "font" : FONTBUTTON,
-    "fg_color" : WHITE,
-    "text_color" : BLACK,
+    "fg_color" : SOMEBLUE,
+    "text_color" : WHITE,
     "hover_color" : GRAYWHITE,
     "hover" : True
 }
+REALBUTTONSTYLE = {
+    "font" : FONTBUTTON,
+    "fg_color" : SOMEBLUE,
+    "text_color" : WHITE,
+    "hover_color" : GRAYWHITE,
+    "hover" : True
+}
+

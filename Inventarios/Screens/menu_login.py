@@ -14,10 +14,6 @@ class menu_login(ctk.CTkFrame):
         super().__init__(parent)
         self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
-        for i in range(3):
-            self.grid_columnconfigure(i, weight=1)
-        for j in range(3):
-            self.grid_rowconfigure(j,weight=1)
         self.init_log()
 
     def check (self):
@@ -27,53 +23,55 @@ class menu_login(ctk.CTkFrame):
     def init_log (self):
         flog = ctk.CTkFrame(
             self,
-            fg_color = style.LIGHTGRAY
+            fg_color = style.GRAY,
+            border_width = 2,
+            border_color=style.WHITE
         )
-        flog.grid_columnconfigure(0,weight=1)
-        flog.grid_rowconfigure(0,weight=1)
-        flog.grid(
-            row = 1,
-            column = 1,
-            sticky = ctk.NSEW,
-            padx = 200,
-            pady = 20
+        flog.place(
+            relx=0.29,
+            rely=0.23,
+            relwidth = 0.4,
+            relheight = 0.5
         )
         self.lb_user = ctk.CTkLabel(
             flog,
-            text = "USUARIO",
-            **style.STYLELABELTITLES2
+            text = "Imagen.png",
+            **style.STYLELABELTITLES2,
+            justify = ctk.CENTER
         )
-        self.lb_user.grid(
-            padx= 0,
-            pady =0
+        self.lb_user.pack(
+            anchor = ctk.N,
+            pady = 30
         )
         self.et_user = ctk.CTkEntry(
             flog,
             placeholder_text = "USUARIO"  
         )
-        self.et_user.grid(
-            padx = 10,
-            pady = (0,15),
-            sticky = ctk.EW
+        self.et_user.pack(
+            anchor = ctk.N,
+            pady = 20,
+            fill = "x",
+            padx = (20,20)
         )
         self.et_pass = ctk.CTkEntry(
             flog,
             placeholder_text = "CONTRASEÑA"  
         )
-        self.et_pass.grid(
-            padx = 10,
-            pady = (0,0),
-            sticky = ctk.EW
-        )            
+        self.et_pass.pack(
+            anchor = ctk.N,
+            fill = "x",
+            pady = 10,
+            padx = (20,20)
+        )         
         self.bt_log = ctk.CTkButton(
             flog,
             text = "INGRESAR",
             **style.REALBUTTONSTYLE,
             command= self.check,
         )
-        self.bt_log.grid(
-            padx = 0,
-            pady = (30,10)
+        self.bt_log.pack(
+            anchor = ctk.N,
+            pady = 15
         )
         
 
