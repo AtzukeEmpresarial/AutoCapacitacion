@@ -41,7 +41,8 @@ class menu_login(ctk.CTkFrame):
         )
         self.lb_user.pack(
             anchor = ctk.N,
-            pady = 30
+            pady = 30,
+            expand = True
         )
         self.et_user = ctk.CTkEntry(
             flog,
@@ -51,7 +52,8 @@ class menu_login(ctk.CTkFrame):
             anchor = ctk.N,
             pady = 20,
             fill = "x",
-            padx = (20,20)
+            padx = (20,20),
+            expand = True
         )
         self.et_pass = ctk.CTkEntry(
             flog,
@@ -61,7 +63,8 @@ class menu_login(ctk.CTkFrame):
             anchor = ctk.N,
             fill = "x",
             pady = 10,
-            padx = (20,20)
+            padx = (20,20),
+            expand = True
         )         
         self.bt_log = ctk.CTkButton(
             flog,
@@ -71,7 +74,8 @@ class menu_login(ctk.CTkFrame):
         )
         self.bt_log.pack(
             anchor = ctk.N,
-            pady = 15
+            pady = 15,
+            expand = True
         )
         
 

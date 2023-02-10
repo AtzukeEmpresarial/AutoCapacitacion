@@ -12,12 +12,29 @@ class menu_principal(ctk.CTkFrame):
         super().__init__(parent)
         self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
-        for i in range(3):
-            self.grid_columnconfigure(i, weight=1)
-        for j in range(3):
-            self.grid_rowconfigure(j,weight=1)
         self.init_text()
         self.init_bg_img()
+    
+    def init_text(self):
+        lb_tittle = ctk.CTkLabel(
+            self,
+            text = "Bienvenido",
+            justify = ctk.CENTER,
+            **style.STYLELABELTITLES
+        )
+        lb_tittle.pack(
+            anchor = ctk.N,
+            pady = (30,15)
+        )
+        lb_subtext = ctk.CTkLabel(
+            self,
+            text = "Recuerde tener de manera local todos los documentos necesarios para alimentar el inventario",
+            justify = ctk.CENTER,
+            **style.STYLELABEL
+        )
+        lb_subtext.pack(
+            anchor = ctk.N
+        )
     
     def init_bg_img(self):
         bancolombia_trace1 = Image.open("Inventarios/Resources/Trazos.png")
@@ -28,37 +45,7 @@ class menu_principal(ctk.CTkFrame):
             image= ctk_img_bancolombia,
             text= ""
         )
-        lb_image.grid(
-            column =   1,
-            row = 2, 
-            columnspan = 3,
-            padx = 0,
-            pady =(0,60)
+        lb_image.pack(
+            anchor = ctk.N
         )
-    
-    def init_text(self):
-        lb_tittle = ctk.CTkLabel(
-            self,
-            text = "Bienvenido",
-            justify = ctk.CENTER,
-            **style.STYLELABELTITLES
-        )
-        lb_tittle.grid(
-            column = 1,
-            row = 1, 
-            padx = 10,
-            pady =10
-            )
-        lb_subtext = ctk.CTkLabel(
-            self,
-            text = "Recuerde tener de manera local todos los documentos necesarios para alimentar el inventario",
-            justify = ctk.CENTER,
-            **style.STYLELABEL
-        )
-        lb_subtext.grid(
-            column = 1,
-            row = 1, 
-            padx = 10,
-            pady =(60,0)
-            )
         
