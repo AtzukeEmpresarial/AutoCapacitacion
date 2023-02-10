@@ -15,12 +15,13 @@ class Manager(ctk.CTk):
         super().__init__(*args, **kwargs)
         self.title("Inventarios Tarjetas")
         container = ctk.CTkFrame(self)
-        self.geometry("1100x580+125+80")
+        self.geometry("1100x650+125+80")
         container.pack(
             side = ctk.TOP,
             fill = ctk.BOTH,
             expand = True,
         )
+        self.minsize(width=1100, height=650)
         #color de fondo, numero y tamaño de las columnas
         container.grid_columnconfigure(0, weight=2)
         container.grid_columnconfigure(1, weight=10)
@@ -39,3 +40,6 @@ class Manager(ctk.CTk):
     def show_frame(self, window):
         frame = self.frames[window]
         frame.tkraise()
+    def active_process(self):
+        frame = self.frames[side_bar]
+        frame.init_widgets("Normal")

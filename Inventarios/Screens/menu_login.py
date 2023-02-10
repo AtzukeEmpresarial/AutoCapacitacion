@@ -1,6 +1,8 @@
 #se importan las librerias que nos permiten generar una interfaz grafica
 import customtkinter as ctk
 from constants import style
+from PIL import Image
+import os
 
 #Se importan valores constantes de nuestra aplicación
 from constants import style
@@ -18,6 +20,8 @@ class menu_login(ctk.CTkFrame):
 
     def check (self):
         connection_state = check_credentials.check_credentials(self.et_user.get(), self.et_pass.get())
+        if connection_state:
+            self.controller.activate_process()
         self.login_message = login_message(self, self.controller,connection_state)
    
     def init_log (self):
@@ -33,15 +37,19 @@ class menu_login(ctk.CTkFrame):
             relwidth = 0.4,
             relheight = 0.5
         )
+        img = Image.open("Inventarios/Resources/user_icon.png")
+        img_usuario = ctk.CTkImage(
+            dark_image= img, 
+            size = (100,100)
+        )
         self.lb_user = ctk.CTkLabel(
             flog,
-            text = "Imagen.png",
-            **style.STYLELABELTITLES2,
-            justify = ctk.CENTER
+            text = "",
+            image = img_usuario
         )
         self.lb_user.pack(
             anchor = ctk.N,
-            pady = 30,
+            pady = (30,0),
             expand = True
         )
         self.et_user = ctk.CTkEntry(
@@ -50,7 +58,7 @@ class menu_login(ctk.CTkFrame):
         )
         self.et_user.pack(
             anchor = ctk.N,
-            pady = 20,
+            pady = (20,20),
             fill = "x",
             padx = (20,20),
             expand = True
@@ -62,7 +70,7 @@ class menu_login(ctk.CTkFrame):
         self.et_pass.pack(
             anchor = ctk.N,
             fill = "x",
-            pady = 10,
+            pady = (0,20),
             padx = (20,20),
             expand = True
         )         
