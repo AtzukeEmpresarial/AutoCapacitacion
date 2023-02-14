@@ -10,7 +10,10 @@ from Screens.side_bar import side_bar
 from Screens.menu_principal import menu_principal
 
 class Manager(ctk.CTk):
-
+    """
+    Clase que se encarga de contener todos los frames que se utilizaran 
+    en el proyecto. 
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.title("Inventarios Tarjetas")
@@ -26,7 +29,7 @@ class Manager(ctk.CTk):
         container.grid_columnconfigure(0, weight=2)
         container.grid_columnconfigure(1, weight=10)
         container.grid_rowconfigure(0,weight=1)
-
+        #Se crea un diccionario donde se crean y guardan todos los frames PRINCIPALES del proyecto.
         self.frames = {}
         for F in (side_bar, menu_login, menu_process,menu_principal):
             frame = F(container, self)
@@ -37,9 +40,19 @@ class Manager(ctk.CTk):
             self.frames[F] = frame       
         self.show_frame(side_bar)
 
+    
     def show_frame(self, window):
+        """
+        Trae al frente el frame indicado. Recibe los parametros: 
+        window = el frame que se desea llevar al frente.
+        """
         frame = self.frames[window]
         frame.tkraise()
+
+    
     def active_process(self):
+        """
+        Activa el botón de alimentar inventario
+        """
         frame = self.frames[side_bar]
         frame.init_widgets("Normal")

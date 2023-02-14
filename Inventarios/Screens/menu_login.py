@@ -23,6 +23,7 @@ class menu_login(ctk.CTkFrame):
         if connection_state:
             self.controller.activate_process()
         self.login_message = login_message(self, self.controller,connection_state)
+        
    
     def init_log (self):
         flog = ctk.CTkFrame(
@@ -65,7 +66,8 @@ class menu_login(ctk.CTkFrame):
         )
         self.et_pass = ctk.CTkEntry(
             flog,
-            placeholder_text = "CONTRASEÑA"  
+            placeholder_text = "CONTRASEÑA",
+            show="*"
         )
         self.et_pass.pack(
             anchor = ctk.N,

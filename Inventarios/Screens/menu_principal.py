@@ -8,7 +8,13 @@ import os
 from constants import style
 
 class menu_principal(ctk.CTkFrame):
+    """
+    Frame de bienvenida, es el primero en enseñarce al iniciar el script.
+    """
     def __init__(self, parent, controller):
+        """
+        Inicia el Frame de bievenida (Principal).
+        """
         super().__init__(parent)
         self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
@@ -16,6 +22,9 @@ class menu_principal(ctk.CTkFrame):
         self.init_bg_img()
     
     def init_text(self):
+        """
+        Inicia los widgets de texto.
+        """
         lb_tittle = ctk.CTkLabel(
             self,
             text = "Bienvenido",
@@ -37,6 +46,9 @@ class menu_principal(ctk.CTkFrame):
         )
     
     def init_bg_img(self):
+        """
+        Inicia el widget de la imagen.
+        """
         bancolombia_trace1 = Image.open("Inventarios/Resources/Trazos.png")
         size = (400,400)
         ctk_img_bancolombia = ctk.CTkImage(bancolombia_trace1, size = size)

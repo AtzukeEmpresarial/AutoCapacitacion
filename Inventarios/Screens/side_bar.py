@@ -9,7 +9,9 @@ from Screens.menu_login import menu_login
 from Screens.menu_process import menu_process
 
 
-#Se crean las diferentes pantallas
+"""
+    Clase que se encarga crear la barra lateral izquierda y contener los diferentes widgets.
+"""
 class side_bar(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -42,7 +44,7 @@ class side_bar(ctk.CTkFrame):
         )
         self.bt_login = ctk.CTkButton(
             self,
-            text = "LOG IN",
+            text = "Ingresar",
             **style.BUTTONSTYLE,
             command= self.set_login_frame,
             corner_radius=0
@@ -53,7 +55,7 @@ class side_bar(ctk.CTkFrame):
         )
         self.bt_procesar = ctk.CTkButton(
             self,
-            text = "PROCESAR",
+            text = "Alimentar Inventario",
             **style.BUTTONSTYLE,
             command= self.set_process_frame,
             corner_radius=0,
