@@ -1,6 +1,5 @@
 import pyodbc
 import pandas as pd
-import sys
 import openpyxl
 from os import makedirs, path 
 
