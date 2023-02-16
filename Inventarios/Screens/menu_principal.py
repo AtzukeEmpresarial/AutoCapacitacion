@@ -37,7 +37,7 @@ class menu_principal(ctk.CTkFrame):
         )
         lb_subtext = ctk.CTkLabel(
             self,
-            text = "Recuerde tener de manera local todos los documentos necesarios para alimentar el inventario",
+            text = "Recuerde tener de manera local todos los documentos \nnecesarios para alimentar el inventario",
             justify = ctk.CENTER,
             **style.STYLELABEL
         )

@@ -8,10 +8,15 @@ import os
 from constants import style
 
 #se importan otras clases necesarias
-from Functions import check_credentials
+from Functions import ODBC
 from Screens.login_message import login_message
 
 class menu_login(ctk.CTkFrame):
+    """
+    Frame de login, se activa al dar click en el boton de ingresar
+    y permite identificar al usuario que usará el programa, ademas 
+    de guardar las credenciales para las consultas.
+    """
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.configure(fg_color = style.GRAYBLACK)
@@ -19,9 +24,11 @@ class menu_login(ctk.CTkFrame):
         self.init_log()
 
     def check (self):
-        connection_state = check_credentials.check_credentials(self.et_user.get(), self.et_pass.get())
+        connection_state = ODBC.check_credentials(self.et_user.get(), self.et_pass.get())
         if connection_state:
             self.controller.activate_process()
+            self.controller.user = self.et_user
+            self.controller.password = self.et_pass
         self.login_message = login_message(self, self.controller,connection_state)
         
    
@@ -34,9 +41,9 @@ class menu_login(ctk.CTkFrame):
         )
         flog.place(
             relx=0.29,
-            rely=0.23,
+            rely=0.19,
             relwidth = 0.4,
-            relheight = 0.5
+            relheight = 0.58
         )
         img = Image.open("Inventarios/Resources/user_icon.png")
         img_usuario = ctk.CTkImage(

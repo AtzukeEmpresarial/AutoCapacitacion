@@ -9,29 +9,47 @@ from Screens.menu_login import menu_login
 from Screens.menu_process import menu_process
 
 
-"""
-    Clase que se encarga crear la barra lateral izquierda y contener los diferentes widgets.
-"""
+
 class side_bar(ctk.CTkFrame):
+    """
+    Clase que se encarga crear la barra lateral izquierda 
+    y contener los diferentes widgets.
+    """
     def __init__(self, parent, controller):
         super().__init__(parent)
-        active_btn_process = "disabled"
+        active_btn_process = "normal" #CAMBIARLO AL FINALIZAR EL FRAME
         self.controller = controller
         self.configure(fg_color= style.GRAY)
         self.init_widgets(active_btn_process)
     
     def set_login_frame(self):
+            """
+            Trae al frente el frame de login, resalta el botón de login 
+            y vuelve a la normalidad los demás botones.
+            """
             self.controller.show_frame(menu_login)
             self.bt_login.configure(**style.ALTER_BUTTONSTYLE)
             self.bt_procesar.configure(**style.BUTTONSTYLE)
+            self.bt_procesar.configure(font = style.FONTTITLES2)
             
 
     def set_process_frame(self):
+            """
+            Trae al frente el frame de alimentar inventarios, 
+            resalta el botón de alimentar inventarios 
+            y vuelve a la normalidad los demás botones.
+            """
             self.controller.show_frame(menu_process)
             self.bt_procesar.configure(**style.ALTER_BUTTONSTYLE)
+            self.bt_procesar.configure(font = style.FONTTITLES2)
             self.bt_login.configure(**style.BUTTONSTYLE)
 
     def init_widgets(self, active_btn_process):
+        """
+        Inicia todos los widgets y frames contenidos en la barra lateral y recibe:
+        active_btn_process = define el estado de actividad de el botón de alimentar inventario.
+        """
+        #botón del titulo
         self.lb_tittle = ctk.CTkLabel(
             self,
             text = "INVENTARIOS",
@@ -42,6 +60,7 @@ class side_bar(ctk.CTkFrame):
             anchor = ctk.N,
             pady = 30
         )
+        #botón de ingreso
         self.bt_login = ctk.CTkButton(
             self,
             text = "Ingresar",
@@ -53,6 +72,7 @@ class side_bar(ctk.CTkFrame):
               fill = ctk.BOTH, 
               expand = True
         )
+        #botón de alimentar inventario
         self.bt_procesar = ctk.CTkButton(
             self,
             text = "Alimentar Inventario",
@@ -61,6 +81,7 @@ class side_bar(ctk.CTkFrame):
             corner_radius=0,
             state = active_btn_process
             )
+        self.bt_procesar.configure(font = style.FONTTITLES2)
         self.bt_procesar.pack(
               fill = ctk.BOTH, 
               expand = True,

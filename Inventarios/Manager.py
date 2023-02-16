@@ -18,17 +18,20 @@ class Manager(ctk.CTk):
         super().__init__(*args, **kwargs)
         self.title("Inventarios Tarjetas")
         container = ctk.CTkFrame(self)
-        self.geometry("1100x650+125+80")
+        self.geometry("1050x550+125+80")
         container.pack(
             side = ctk.TOP,
             fill = ctk.BOTH,
             expand = True,
         )
-        self.minsize(width=1100, height=650)
+        self.minsize(width=1050, height=550)
         #color de fondo, numero y tamaño de las columnas
         container.grid_columnconfigure(0, weight=2)
         container.grid_columnconfigure(1, weight=10)
         container.grid_rowconfigure(0,weight=1)
+        #Creamos variables que guardaran las credenciales de manera global
+        global user 
+        global password
         #Se crea un diccionario donde se crean y guardan todos los frames PRINCIPALES del proyecto.
         self.frames = {}
         for F in (side_bar, menu_login, menu_process,menu_principal):

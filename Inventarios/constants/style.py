@@ -11,6 +11,7 @@ FONT = "Calibri Bold"
 
 BACKGROUND = GRAYWHITE
 FONT = (FONT, 19)
+FONTSMALLBUTTON = (FONT, 19, "bold")
 FONTTITLES = (FONT, 38, "bold")
 FONTTITLES2 = (FONT, 28, "bold")
 FONTBUTTON = (FONT, 30, "bold")
@@ -47,6 +48,13 @@ ALTER_BUTTONSTYLE = {
 }
 REALBUTTONSTYLE = {
     "font" : FONTBUTTON,
+    "fg_color" : BLUE,
+    "text_color" : WHITE,
+    "hover_color" : DARKBLUE,
+    "hover" : True
+}
+SMALLBUTTONSTYLE = {
+    "font" : FONTSMALLBUTTON,
     "fg_color" : BLUE,
     "text_color" : WHITE,
     "hover_color" : DARKBLUE,
