@@ -101,13 +101,13 @@ class menu_process(ctk.CTkFrame):
             self.tab_alimentar.tab(self.tab1),
             **style.SMALLBUTTONSTYLE,
             text = "Explorar",
-            command = self.find_file
+            command = self.find_file,
+            width = 100,
+            height= 26
         )
         self.bt_file.place(
             relx = 0.82,
-            rely = 0.0995,
-            width = 100,
-            height= 26,
+            rely = 0.0995
         )
         #Botón que carga el archivo indicado en la ruta.
         self.bt_load = ctk.CTkButton(
