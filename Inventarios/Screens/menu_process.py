@@ -9,6 +9,11 @@ from constants import style
 from Functions import ODBC
 
 class menu_process(ctk.CTkFrame):
+    """
+    Clase encargada de la alimentación y proceso de datos,
+    este contiene diferentes pestañas para los distintos pasos del
+    proceso
+    """
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.configure(fg_color = style.GRAYBLACK)
@@ -16,10 +21,16 @@ class menu_process(ctk.CTkFrame):
         self.init_tabview()
         
     def import_file(self):
+        """
+        Funcion encargada de importar la alimentación del inventario,
+        transforma la fuente de datos de pandas en un dataframe y lo pone en pantalla
+        en una tabla con tksheet.
+        """
         self.path = self.et_file.get()
-        self.temp_file = ODBC.import_from_excel(self.path)
+        self.temp_file = ODBC.import_from_excel(self, self.path)
         self.df_excel = pd.DataFrame(self.temp_file)
         self.df_excel["SEMANAS INVENTARIO"] = pd.Series([round(val,2) for val in self.df_excel["SEMANAS INVENTARIO"]]) 
+        #Tabla en la cual se colocan los datos
         self.sheet = Sheet(
             self.tab_alimentar.tab(self.tab1),
             data = self.df_excel.values.tolist(),
@@ -36,10 +47,17 @@ class menu_process(ctk.CTkFrame):
 
 
     def find_file(self):
+        """
+        Abre una nueva ventana de busqueda local para indicar la
+        dirección del archivo deseado.
+        """
         path = ctk.filedialog.askopenfilename()
         self.et_file.insert(0,path)
 
     def init_tabview(self):
+        """
+        Inicia el widget de pestañas, este contiene los diferentes procesos de datos
+        """
         self.tab_alimentar = ctk.CTkTabview(
             self,
             segmented_button_selected_hover_color = style.BLUE,
@@ -57,7 +75,7 @@ class menu_process(ctk.CTkFrame):
         self.tab_alimentar.add(self.tab1)
         self.tab_alimentar.add(self.tab2)
         self.tab_alimentar.set(self.tab1)
-
+        #Inicia el entri donde se colocará la dirección del archivo
         self.et_file = ctk.CTkEntry(
             self.tab_alimentar.tab(self.tab1),
             placeholder_text = "Ingrese la dirección del archivo o seleccionelo con el botón Explorar"
@@ -67,6 +85,7 @@ class menu_process(ctk.CTkFrame):
             rely = 0.1,
             relwidth = 0.65
         )
+        #Label del entry de dirección de archivo
         self.lb_file = ctk.CTkLabel(
             self.tab_alimentar.tab(self.tab1),
             **style.STYLELABEL,
@@ -77,6 +96,7 @@ class menu_process(ctk.CTkFrame):
             relx = 0.03,
             rely = 0.1
         )
+        #Botón que ejecuta el buscador de archivos.
         self.bt_file = ctk.CTkButton(
             self.tab_alimentar.tab(self.tab1),
             **style.SMALLBUTTONSTYLE,
@@ -89,6 +109,7 @@ class menu_process(ctk.CTkFrame):
             width = 100,
             height= 26,
         )
+        #Botón que carga el archivo indicado en la ruta.
         self.bt_load = ctk.CTkButton(
             self.tab_alimentar.tab(self.tab1),
             **style.SMALLBUTTONSTYLE,

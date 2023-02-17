@@ -15,13 +15,33 @@ class login_message(ctk.CTkToplevel):
         if case:
             self.label = ctk.CTkLabel(
                 self,
-                text= "Ingreso exitoso",
+                text = "Ingreso exitoso",
                 **style.STYLELABEL
             )
         else:
             self.label = ctk.CTkLabel(
                 self,
-                text= "Su contraseña y/o usuario son incorrectos",
+                text = "Su contraseña y/o usuario son incorrectos",
+                **style.STYLELABEL
+            )
+        self.label.pack(padx=20, pady=20)
+        self.attributes("-topmost",True)
+        self.focus()
+    def __init__(self, parent,case):
+        super().__init__(parent)
+        self.geometry("500x60+800+300")
+        self.configure(fg_color = style.GRAYBLACK)
+        self.title("ADVERTENCIA")
+        if case:
+            self.label = ctk.CTkLabel(
+                self,
+                text = "Ingreso exitoso",
+                **style.STYLELABEL
+            )
+        else:
+            self.label = ctk.CTkLabel(
+                self,
+                text = "Su contraseña y/o usuario son incorrectos",
                 **style.STYLELABEL
             )
         self.label.pack(padx=20, pady=20)

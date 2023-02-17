@@ -24,6 +24,10 @@ class menu_login(ctk.CTkFrame):
         self.init_log()
 
     def check (self):
+        """
+        Función que verifica que el usuario y contraseña exista en el sistema
+        AS400 de medellín o nacional según se configure.
+        """
         connection_state = ODBC.check_credentials(self.et_user.get(), self.et_pass.get())
         if connection_state:
             self.controller.activate_process()
@@ -33,6 +37,10 @@ class menu_login(ctk.CTkFrame):
         
    
     def init_log (self):
+        """
+        Inicia todos los widgets contenidos en el frame de menu_login, no recibe nada.
+        """
+        #Frame que contiene el menu del login
         flog = ctk.CTkFrame(
             self,
             fg_color = style.GRAY,
@@ -45,11 +53,13 @@ class menu_login(ctk.CTkFrame):
             relwidth = 0.4,
             relheight = 0.58
         )
+        #carga y abre la imagen
         img = Image.open("Inventarios/Resources/user_icon.png")
         img_usuario = ctk.CTkImage(
             dark_image= img, 
             size = (100,100)
         )
+        #label que contiene la imagen de usuario
         self.lb_user = ctk.CTkLabel(
             flog,
             text = "",
@@ -60,6 +70,7 @@ class menu_login(ctk.CTkFrame):
             pady = (30,0),
             expand = True
         )
+        #Entrada de datos: usuario
         self.et_user = ctk.CTkEntry(
             flog,
             placeholder_text = "USUARIO"  
@@ -71,6 +82,7 @@ class menu_login(ctk.CTkFrame):
             padx = (20,20),
             expand = True
         )
+        #Entrada de datos: contraseña
         self.et_pass = ctk.CTkEntry(
             flog,
             placeholder_text = "CONTRASEÑA",
@@ -82,7 +94,8 @@ class menu_login(ctk.CTkFrame):
             pady = (0,20),
             padx = (20,20),
             expand = True
-        )         
+        )
+        #Botón para ingresar         
         self.bt_log = ctk.CTkButton(
             flog,
             text = "INGRESAR",

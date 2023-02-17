@@ -25,6 +25,7 @@ class menu_principal(ctk.CTkFrame):
         """
         Inicia los widgets de texto.
         """
+        #Titulo grande
         lb_tittle = ctk.CTkLabel(
             self,
             text = "Bienvenido",
@@ -35,6 +36,7 @@ class menu_principal(ctk.CTkFrame):
             anchor = ctk.N,
             pady = (30,15)
         )
+        #Subtitulo
         lb_subtext = ctk.CTkLabel(
             self,
             text = "Recuerde tener de manera local todos los documentos \nnecesarios para alimentar el inventario",
@@ -49,9 +51,11 @@ class menu_principal(ctk.CTkFrame):
         """
         Inicia el widget de la imagen.
         """
+        #Carga y abre la imagen
         bancolombia_trace1 = Image.open("Inventarios/Resources/Trazos.png")
         size = (400,400)
         ctk_img_bancolombia = ctk.CTkImage(bancolombia_trace1, size = size)
+        #Label que contiene la imagen
         lb_image = ctk.CTkLabel(
             self,
             image= ctk_img_bancolombia,
