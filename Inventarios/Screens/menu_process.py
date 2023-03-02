@@ -52,6 +52,7 @@ class menu_process(ctk.CTkFrame):
         dirección del archivo deseado.
         """
         path = ctk.filedialog.askopenfilename()
+        self.et_file.delete(0, ctk.END)
         self.et_file.insert(0,path)
 
     def init_tabview(self):

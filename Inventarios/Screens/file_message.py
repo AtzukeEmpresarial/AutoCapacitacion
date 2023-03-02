@@ -8,7 +8,7 @@ from constants import style
 class file_message(ctk.CTkToplevel):
     def __init__(self, parent, self_find):
         super().__init__(parent)
-        self.geometry("500x60+800+300")
+        self.geometry("600x60+600+200")
         self.configure(fg_color = style.GRAYBLACK)
         self.title("ADVERTENCIA")
         self.controller = self_find.controller
@@ -20,3 +20,4 @@ class file_message(ctk.CTkToplevel):
         self.label.pack(padx=20, pady=20)
         self.attributes("-topmost",True)
         self.focus()
+        self.focus_set()

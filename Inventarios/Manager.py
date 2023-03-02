@@ -8,6 +8,7 @@ from Screens.menu_login import menu_login
 from Screens.menu_process import menu_process
 from Screens.side_bar import side_bar
 from Screens.menu_principal import menu_principal
+from Screens.menu_parameters import menu_parameters
 
 class Manager(ctk.CTk):
     """
@@ -34,7 +35,7 @@ class Manager(ctk.CTk):
         global password
         #Se crea un diccionario donde se crean y guardan todos los frames PRINCIPALES del proyecto.
         self.frames = {}
-        for F in (side_bar, menu_login, menu_process,menu_principal):
+        for F in (side_bar, menu_login, menu_process,menu_principal, menu_parameters):
             frame = F(container, self)
             if F == side_bar:    
                 frame.grid(row = 0, column = 0, sticky = ctk.NSEW)
@@ -42,6 +43,7 @@ class Manager(ctk.CTk):
                 frame.grid(row = 0, column = 1, sticky = ctk.NSEW)
             self.frames[F] = frame       
         self.show_frame(side_bar)
+        self.show_frame(menu_principal)
 
     
     def show_frame(self, window):
@@ -58,4 +60,9 @@ class Manager(ctk.CTk):
         Activa el botón de alimentar inventario
         """
         frame = self.frames[side_bar]
-        frame.init_widgets("Normal")
+        frame.bt_procesar.configure(state = "normal")
+        frame.bt_procesar.configure(**style.ALTER_BUTTONSTYLE)
+        frame.bt_params.configure(state = "normal")
+        frame.bt_login.configure(state = "disabled")
+        frame.bt_login.configure(**style.BUTTONSTYLE)
+        frame.init_user()

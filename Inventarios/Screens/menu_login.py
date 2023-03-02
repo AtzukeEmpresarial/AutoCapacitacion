@@ -10,6 +10,7 @@ from constants import style
 #se importan otras clases necesarias
 from Functions import ODBC
 from Screens.login_message import login_message
+from Screens.menu_process import menu_process
 
 class menu_login(ctk.CTkFrame):
     """
@@ -30,10 +31,11 @@ class menu_login(ctk.CTkFrame):
         """
         connection_state = ODBC.check_credentials(self.et_user.get(), self.et_pass.get())
         if connection_state:
-            self.controller.activate_process()
-            self.controller.user = self.et_user
-            self.controller.password = self.et_pass
-        self.login_message = login_message(self, self.controller,connection_state)
+            self.controller.user = self.et_user.get()
+            self.controller.password = self.et_pass.get()
+            self.controller.active_process()
+            self.controller.show_frame(menu_process)
+        self.login_message = login_message(self.controller,connection_state)
         
    
     def init_log (self):
