@@ -18,7 +18,7 @@ class side_bar(ctk.CTkFrame):
     """
     def __init__(self, parent, controller):
         super().__init__(parent)
-        active_btn_process = "disabled" #Controla si el botón de proceso está activo, cambiar según convenga el desarrollo
+        active_btn_process = "normal" #Controla si el botón de proceso está activo, cambiar según convenga el desarrollo
         self.controller = controller
         self.configure(fg_color= style.GRAY)
         self.init_widgets(active_btn_process)

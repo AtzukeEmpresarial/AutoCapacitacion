@@ -76,6 +76,7 @@ class menu_process(ctk.CTkFrame):
         self.tab_alimentar.add(self.tab1)
         self.tab_alimentar.add(self.tab2)
         self.tab_alimentar.set(self.tab1)
+        
         #Inicia el entri donde se colocará la dirección del archivo
         self.et_file = ctk.CTkEntry(
             self.tab_alimentar.tab(self.tab1),

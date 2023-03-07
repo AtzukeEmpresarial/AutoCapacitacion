@@ -35,7 +35,7 @@ class menu_login(ctk.CTkFrame):
             self.controller.password = self.et_pass.get()
             self.controller.active_process()
             self.controller.show_frame(menu_process)
-        self.login_message = login_message(self.controller,connection_state)
+            self.login_message = login_message(self, self.controller,connection_state)
         
    
     def init_log (self):
