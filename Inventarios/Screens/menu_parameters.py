@@ -3,6 +3,7 @@ import tkinter as tk
 import customtkinter as ctk
 from tksheet import Sheet
 import pandas as pd
+import datetime as dt
 
 #Se importan valores constantes de nuestra aplicación
 from constants import style
@@ -10,6 +11,7 @@ from Functions import ODBC
 from ORM import classes_orm
 
 class menu_parameters(ctk.CTkFrame):
+    fecha = dt.date.today()
     """
     Clase encargada de la parametrización y creación de datos
     importantes para el sistema.
@@ -19,17 +21,28 @@ class menu_parameters(ctk.CTkFrame):
         self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
         self.init_tabview()
+        
 
     def load(self):
-        plastico = classes_orm.Plasticos(
-            self.et_codigo_inventario.get,
-            self.et_codigo_franquicia.get,
-            self.et_tipo_tarjeta.get,
-            self.et_bin.get,
-            
-
-
+        self.plastico = classes_orm.Plasticos(
+            CODINV = int(self.et_codigo_inventario.get()),
+            CODFRANQ = int(self.et_codigo_franquicia.get()),
+            TIPOTARJETA = self.et_tipo_tarjeta.get(),
+            BIN = int(self.et_bin.get()),
+            LOGO = int(self.et_logo.get()),
+            TIPOPRODUCTO = self.et_tipo_producto.get(),
+            CLASE = self.et_clase.get(),
+            NOMBRE = self.et_nombre.get(),
+            ACUMULACION = self.et_acumulacion.get(),
+            TIPOREALCE = self.et_realce.get(),
+            OBSERVACIONES = self.tb_observaciones.get("1.0","end-1c"),
+            SEGMENTO = self.et_segmento.get(),
+            DESCONTINUADO = int(self.chk_descontinuado.get()),
+            CANTIDAD = int(self.et_cantidad.get()),
+            FECHA = dt.date.today(),
+            IDOPERADOR = int(self.et_operador.get())
         )
+
 
 
     def init_tabview(self):
@@ -331,10 +344,11 @@ class menu_parameters(ctk.CTkFrame):
             relwidth = 0.365
         )
         #Label y entry de la FECHA
+        
         self.lb_fecha = ctk.CTkLabel(
             self.tab_parametros.tab(self.tab1),
             **style.STYLELABEL,
-            text= "01/01/1991",
+            text= self.fecha.strftime("%Y-%m-%d"),
             fg_color="transparent"
         )
         self.lb_fecha.place(
@@ -385,11 +399,13 @@ class menu_parameters(ctk.CTkFrame):
         self.bt_load = ctk.CTkButton(
             self.tab_parametros.tab(self.tab1),
             **style.SMALLBUTTONSTYLE,
-            text = "Importar",
-            command = self.load
+            text = "Cargar",
+            command = self.load,
+            width= 50
         )
         self.bt_load.place(
-            ranchor = ctk.E
+            relx = 0.85,
+            rely = 0.35
         )
         
 
