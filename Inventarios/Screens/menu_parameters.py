@@ -7,6 +7,7 @@ import pandas as pd
 #Se importan valores constantes de nuestra aplicación
 from constants import style
 from Functions import ODBC
+from ORM import classes_orm
 
 class menu_parameters(ctk.CTkFrame):
     """
@@ -18,6 +19,18 @@ class menu_parameters(ctk.CTkFrame):
         self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
         self.init_tabview()
+
+    def load(self):
+        plastico = classes_orm.Plasticos(
+            self.et_codigo_inventario.get,
+            self.et_codigo_franquicia.get,
+            self.et_tipo_tarjeta.get,
+            self.et_bin.get,
+            
+
+
+        )
+
 
     def init_tabview(self):
         """
@@ -250,8 +263,8 @@ class menu_parameters(ctk.CTkFrame):
             text = "Descontinuado",
             **style.STYLELABEL,
             variable = self.descont_var,
-            onvalue= "on",
-            offvalue="off"
+            onvalue= 1,
+            offvalue= 0
         )
         self.chk_descontinuado.place(
             relx = 0.55,
@@ -336,7 +349,7 @@ class menu_parameters(ctk.CTkFrame):
             fg_color="transparent"
         )
         self.lb_cantidad.configure(
-            font = ("Calibri Bold", 28, "bold")
+            font = style.FONTPARAMETER
         )
         self.lb_cantidad.place(
             relx = 0.03,
@@ -347,10 +360,10 @@ class menu_parameters(ctk.CTkFrame):
             placeholder_text = ""
         )
         self.et_cantidad.configure(
-            font = ("Calibri Bold", 28, "bold")
+            font = style.FONTPARAMETER
         )
         self.et_cantidad.place(
-            relx = 0.21,
+            relx = 0.23,
             rely = 0.65,
             relwidth = 0.1
         )
@@ -367,6 +380,16 @@ class menu_parameters(ctk.CTkFrame):
         self.tb_observaciones.place(
             relx = 0.03,
             rely = 0.77
+        )
+        #Botón que carga el plastico a la base de datos
+        self.bt_load = ctk.CTkButton(
+            self.tab_parametros.tab(self.tab1),
+            **style.SMALLBUTTONSTYLE,
+            text = "Importar",
+            command = self.load
+        )
+        self.bt_load.place(
+            ranchor = ctk.E
         )
         
 

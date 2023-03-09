@@ -6,102 +6,113 @@ Base = declarative_base()
 #tabla de prueba
 class Atzuke(Base):
     __tablename__ = 'ATZUKE'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
     COMPOPOS = Column(CHAR)
 
 class Plasticos(Base):
     __tablename__ = 'PLASTICOS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    CODINV = Column(INTEGER)
-    CODFRANQ = Column(INTEGER)
-    TIPOTARJETA = Column(CHAR)
-    BIN = Column(INTEGER)
+    CODINV = Column(INTEGER,nullable = False)
+    CODFRANQ = Column(INTEGER,nullable = False)
+    TIPOTARJETA = Column(CHAR,nullable = False)
+    BIN = Column(INTEGER,nullable = False)
     LOGO = Column(INTEGER)
     TIPOPRODUCTO = Column(CHAR)
-    CLASE = Column(CHAR)
-    NOMBRE = Column(CHAR)
+    CLASE = Column(CHAR,nullable = False)
+    NOMBRE = Column(CHAR,nullable = False)
     ACUMULACION = Column(CHAR)
     TIPOREALCE = Column(CHAR)
     OBSERVACIONES = Column(CHAR)
     SEGMENTO = Column(CHAR)
-    DESCONTINUADO = Column(NUMERIC)
-    CANTIDAD = Column(INTEGER)
-    FECHA = Column(DATE)
-    IDOPERADOR = Column(INTEGER)
+    DESCONTINUADO = Column(NUMERIC,nullable = False)
+    CANTIDAD = Column(INTEGER,nullable = False)
+    FECHA = Column(DATE,nullable = False)
+    IDOPERADOR = Column(INTEGER,nullable = False)
 
 class Franquicias(Base):
     __tablename__ = 'FRANQUICIAS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    CODIGO = Column(INTEGER)
-    NOMBRE = Column(CHAR)
-    ACTIVA = Column(NUMERIC)
+    CODIGO = Column(INTEGER,nullable = False)
+    NOMBRE = Column(CHAR,nullable = False)
+    ACTIVA = Column(NUMERIC,nullable = False)
 
 class Plantas(Base):
     __tablename__ = 'PLANTAS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    UBICACION = Column(CHAR)
+    UBICACION = Column(CHAR,nullable = False)
     DESCRIPCION = Column(CHAR)
-    IDOPERADOR = Column(INTEGER)
-    ACTIVA = Column(NUMERIC)
+    IDOPERADOR = Column(INTEGER,nullable = False)
+    ACTIVA = Column(NUMERIC,nullable = False)
 
 class Operadores(Base):
     __tablename__ = 'OPERADORES'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    NOMBRE = Column(CHAR)
+    NOMBRE = Column(CHAR,nullable = False)
     DESCRIPCION = Column(CHAR)
-    ACTIVA = Column(NUMERIC)
+    ACTIVA = Column(NUMERIC,nullable = False)
 
 class Movimientos(Base):
     __tablename__ = 'MOVIMIENTOS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    CODINVPLASTICOS = Column(INTEGER)
-    IDPLANTA = Column(INTEGER)
-    IDPLANTAFINAL = Column(INTEGER)
-    IDTIPOMOV = Column(INTEGER)
-    FECHA = Column(DATE)
-    CANTIDAD = Column(INTEGER)
+    CODINVPLASTICOS = Column(INTEGER,nullable = False)
+    IDPLANTA = Column(INTEGER,nullable = False)
+    IDPLANTAFINAL = Column(INTEGER,nullable = False)
+    IDTIPOMOV = Column(INTEGER,nullable = False)
+    FECHA = Column(DATE,nullable = False)
+    CANTIDAD = Column(INTEGER,nullable = False)
 
 class TipoMovimientos(Base):
     __tablename__ = 'TIPOMOVIMIENTOS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    MOVIMIENTO = Column(CHAR)
+    MOVIMIENTO = Column(CHAR,nullable = False)
     DESCRIPCION = Column(CHAR)
 
 class PedidosTj(Base):
     __tablename__ = 'PEDIDOSTJ'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    IDOPERADOR = Column(INTEGER)
-    CODINVPLASTICOS = Column(INTEGER)
-    FECHA = Column(DATE)
-    TRM = Column(DECIMAL)
-    FECHAESTIMADA = Column(DATE)
-    CANTIDAD = Column(INTEGER)
-    PRECIO = Column(DECIMAL)
+    IDOPERADOR = Column(INTEGER,nullable = False)
+    CODINVPLASTICOS = Column(INTEGER,nullable = False)
+    FECHA = Column(DATE,nullable = False)
+    TRM = Column(DECIMAL,nullable = False)
+    FECHAESTIMADA = Column(DATE,nullable = False)
+    CANTIDAD = Column(INTEGER,nullable = False)
+    PRECIO = Column(DECIMAL,nullable = False)
     CANTIDADDESP = Column(INTEGER)
-    FECHASOPO = Column(DATE)
-    IDESTADO = Column(INTEGER)
-    VALORAPAGAR = Column(DECIMAL)
+    FECHASOPO = Column(DATE,nullable = False)
+    IDESTADO = Column(INTEGER,nullable = False)
+    VALORAPAGAR = Column(DECIMAL,nullable = False)
     FECHAPAGO = Column(DATE)
     OBSERVACION = Column(CHAR)
 
 class TipoEstados(Base):
     __tablename__ = 'TIPOESTADOS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    NOMBRE = Column(CHAR)
-    DESCRIPCION = Column(CHAR)
+    NOMBRE = Column(CHAR,nullable = False)
+    DESCRIPCION = Column(CHAR,nullable = False)
 
 class Insumos(Base):
     __tablename__ = 'INSUMOS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    CUSTODIA = Column(INTEGER)
-    RESPONSABLE = Column(CHAR)
-    CONTROL = Column(NUMERIC)
-    USO = Column(NUMERIC)
-    DESCRIPCION = Column(CHAR)
+    CUSTODIA = Column(INTEGER,nullable = False)
+    RESPONSABLE = Column(CHAR,nullable = False)
+    CONTROL = Column(NUMERIC,nullable = False)
+    USO = Column(NUMERIC,nullable = False)
+    DESCRIPCION = Column(CHAR,nullable = False)
 
 class Danos(Base):
     __tablename__ = 'DANOS'
+    __table_args__ = {"schema": "CISLIBPR"}
     ID = Column(INTEGER, primary_key = True)
-    CODINVPLASTICOS = Column(INTEGER)
-    CANTIDAD = Column(INTEGER)
-    FECHA = Column(DATE)
+    CODINVPLASTICOS = Column(INTEGER,nullable = False)
+    CANTIDAD = Column(INTEGER,nullable = False)
+    FECHA = Column(DATE,nullable = False)

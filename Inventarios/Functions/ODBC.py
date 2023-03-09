@@ -15,7 +15,6 @@ def check_credentials (user, password):
     password = Contraseña del usuario.
     """
     try:
-        #cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID='+ user +';PWD='+ password, autocommit=True )
         engine = create_engine('ibm_db_sa+pyodbc://NSERPOSAD:ATZUKE23@QDSN_NACIONALET01')
         conection = engine.connect()
         return(True)

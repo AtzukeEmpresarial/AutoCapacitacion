@@ -44,8 +44,6 @@ class menu_process(ctk.CTkFrame):
             relheight = 0.7
         )
 
-
-
     def find_file(self):
         """
         Abre una nueva ventana de busqueda local para indicar la
