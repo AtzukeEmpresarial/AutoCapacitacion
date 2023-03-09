@@ -48,3 +48,4 @@ for atzuke in atzukes:
     print(atzuke.ID, atzuke.COMPOPOS)
 
 
+
