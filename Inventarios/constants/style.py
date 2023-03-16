@@ -1,3 +1,6 @@
+'''Este archivo de python contiene todas las CONSTANTES 
+de estilo que se usan en todo el proyecto'''
+
 GRAY = "#212121" #GRIS OSCURO
 WHITE = "#FFFFFF"
 BLACK = "#000000"

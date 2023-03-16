@@ -2,15 +2,13 @@
 import customtkinter as ctk
 from constants import style
 from PIL import Image
-import os
 
 #Se importan valores constantes de nuestra aplicación
 from constants import style
 
 #se importan otras clases necesarias
-from Functions import ODBC
-from Screens.login_message import login_message
-from Screens.menu_process import menu_process
+from Functions import DBC
+from Screens.message.message import login_message
 
 class menu_login(ctk.CTkFrame):
     """
@@ -29,15 +27,14 @@ class menu_login(ctk.CTkFrame):
         Función que verifica que el usuario y contraseña exista en el sistema
         AS400 de medellín o nacional según se configure.
         """
-        connection_state = ODBC.check_credentials(self.et_user.get(), self.et_pass.get())
+        connection_state = DBC.check_credentials(self.et_user.get(), self.et_pass.get())
         if connection_state:
             self.controller.user = self.et_user.get()
             self.controller.password = self.et_pass.get()
             self.controller.active_process()
-            self.controller.show_frame(menu_process)
             self.login_message = login_message(self, self.controller,connection_state)
-        
-   
+            self.destroy()
+
     def init_log (self):
         """
         Inicia todos los widgets contenidos en el frame de menu_login, no recibe nada.
@@ -97,6 +94,7 @@ class menu_login(ctk.CTkFrame):
             padx = (20,20),
             expand = True
         )
+        self.et_pass.bind("<Enter>", command= self.check)
         #Botón para ingresar         
         self.bt_log = ctk.CTkButton(
             flog,
@@ -109,6 +107,7 @@ class menu_login(ctk.CTkFrame):
             pady = 15,
             expand = True
         )
+        
         
 
         

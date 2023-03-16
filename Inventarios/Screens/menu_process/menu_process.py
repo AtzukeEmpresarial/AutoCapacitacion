@@ -6,7 +6,7 @@ import pandas as pd
 
 #Se importan valores constantes de nuestra aplicación
 from constants import style
-from Functions import ODBC
+from Functions import DBC
 
 class menu_process(ctk.CTkFrame):
     """
@@ -27,7 +27,7 @@ class menu_process(ctk.CTkFrame):
         en una tabla con tksheet.
         """
         self.path = self.et_file.get()
-        self.temp_file = ODBC.import_from_excel(self, self.path)
+        self.temp_file = DBC.import_from_excel(self, self.path)
         self.df_excel = pd.DataFrame(self.temp_file)
         self.df_excel["SEMANAS INVENTARIO"] = pd.Series([round(val,2) for val in self.df_excel["SEMANAS INVENTARIO"]]) 
         #Tabla en la cual se colocan los datos

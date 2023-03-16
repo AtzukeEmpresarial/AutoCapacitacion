@@ -85,7 +85,7 @@ def inicio(opcion):
                 '9191','9302','9202','9305','9205','9303','9203','9204','9304') AND COFECHAPOS = '{date}' AND LEFT(cologo,1) = '6' AND coorg = '807' ORDER BY
                 AMNA1_017 DESC'''
                 print('Ejecutando el primer query...')
-                df_1 = pd.read_sql(sql_1, cnx_nac)
+                df_1 = pd.read_sql(sql_1, cnx_nac) 
                 print('Primer query terminado, comenzando la generación de 3 archivos')
                 guardar(
                     df_1[[
