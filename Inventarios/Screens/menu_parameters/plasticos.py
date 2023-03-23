@@ -1,18 +1,44 @@
 import customtkinter as ctk
 import pandas as pd
-from Screens.message.message import used_codinv_message
+from Screens.message.message import alert_message
 
 from constants import style
 from Functions import validations, DBC
 
+def delete_by_codinv(self):
+    '''Función que se encarga de eliminar un plastico según su CODINV'''
+
+    self.confirm_action("¿Está seguro que desea Eliminar este registro de Forma permanente?")
+    self.confirm_action("¿Seguro que desea eliminarlo?")
+
+    if self.cfm:
+        DBC.delete(self.cnx_nac,"CODINV", int(self.et_codigo_inventario.get()), "PLASTICOS")
+        self.et_id.delete(0,ctk.END)
+        self.et_codigo_inventario.delete(0,ctk.END)
+        self.et_codigo_franquicia.delete(0,ctk.END)
+        self.et_tipo_tarjeta.delete(0,ctk.END)
+        self.et_bin.delete(0,ctk.END)
+        self.et_logo.delete(0,ctk.END)
+        self.et_tipo_producto.delete(0,ctk.END)
+        self.et_clase.delete(0,ctk.END)
+        self.et_nombre.delete(0,ctk.END)
+        self.et_acumulacion.delete(0,ctk.END)
+        self.et_realce.delete(0,ctk.END)
+        self.tb_observaciones.delete(1.0,ctk.END)
+        self.et_segmento.delete(0,ctk.END)
+        self.et_cantidad.delete(0,ctk.END)
+        self.ids_plasticos = DBC.find_indexes(self.cnx_nac,"ID","PLASTICOS").to_list()
+        self.ids_plasticos.sort()
+        self.cfm = False
+
 def search_by_codinv(self):
     ''' Función que carga los datos de un plastico según el ID'''
-    plasticos_df = DBC.find_by_codinv(self.cnx_nac,int(self.et_codigo_inventario.get()),"PLASTICOS")
+    plasticos_df = DBC.find_by(self.cnx_nac, "CODINV", int(self.et_codigo_inventario.get()), "PLASTICOS")
     load_in_widgets_codinv(self,plasticos_df)
 
 def search_by_id(self):
     ''' Función que carga los datos de un plastico según el ID'''
-    plasticos_df = DBC.find_by_id(self.cnx_nac,int(self.et_id.get()),"PLASTICOS")
+    plasticos_df = DBC.find_by(self.cnx_nac, "ID", int(self.et_id.get()), "PLASTICOS")
     load_in_widgets(self,plasticos_df)
 
 def next(self):
@@ -20,7 +46,7 @@ def next(self):
     basado en el ID'''
     
     if self.et_id.get() == "":
-        self.ids_plasticos = DBC.find_ids(self.cnx_nac,"PLASTICOS").to_list()
+        self.ids_plasticos = DBC.find_indexes(self.cnx_nac,"ID","PLASTICOS").to_list()
         self.ids_plasticos.sort()
         self.et_id.delete(0, ctk.END)
         self.et_id.insert(0, str(self.ids_plasticos[0]))
@@ -42,7 +68,6 @@ def previous (self):
         self.et_id.delete(0, ctk.END)
         self.et_id.insert(0, str(self.ids_plasticos[index - 1]))
         search_by_id(self)
-        print(self.ids_plasticos)  
 
 def clean (self):
     '''Limpia la información de los widgets de plasticos'''
@@ -167,41 +192,96 @@ def insert(self):
     de la ODBC que guarda los plasticos.
     SE REVISA QUE EL CODIGO DE INVENTARIO NO EXISTA'''
 
-    codinvs = DBC.find_codinvs(self.cnx_nac, "PLASTICOS")
-    if int(self.et_codigo_inventario.get()) in codinvs:
-        self.message = used_codinv_message(self, self.controller)
-    else:
-        plasticos_dic = {
-            'CODINV' : [int(self.et_codigo_inventario.get())],
-            'CODFRANQ' : [int(self.et_codigo_franquicia.get())],
-            'TIPOTARJETA' : [self.et_tipo_tarjeta.get()],
-            'CODBIN' : [int(self.et_bin.get())],
-            'CODLOGO' : [int(self.et_logo.get())],
-            'TIPOPRODUC' : [self.et_tipo_producto.get()],
-            'CLASE' : [self.et_clase.get()],
-            'NOMBRE' : [self.et_nombre.get()],
-            'ACUMULACION' : [self.et_acumulacion.get()],
-            'TIPOREALCE' : [self.et_realce.get()],
-            'OBSERVACIONES' : [self.tb_observaciones.get("1.0","end-1c")],
-            'SEGMENTO' : [self.et_segmento.get()],
-            'DESCONT' : [int(self.chk_descontinuado.get())],
-            'PIDEMIACALI':[int(self.chk_idemia_produc_cali.get())],
-            'PTHALESIZTA':[int(self.chk_thales_produc_iztapalapa.get())],
-            'PTHALESASIA':[int(self.chk_thales_produc_asia.get())],
-            'RIDEMIACALI':[int(self.chk_idemia_real_cali.get())],
-            'RIDEMIABOGO':[int(self.chk_idemia_real_bogo.get())],
-            'RIDEMIAMEDE':[int(self.chk_idemia_real_mede.get())],
-            'RIDEMIAPERE':[int(self.chk_idemia_real_pere.get())],
-            'RIDEMIABUCA':[int(self.chk_idemia_real_buca.get())],
-            'RIDEMIABARRA':[int(self.chk_idemia_real_bquilla.get())],
-            'RTHALESBOGO':[int(self.chk_thales_real_bogo.get())],
-            'CANTIDAD' : [int(self.et_cantidad.get())],
-            'FECHA' : [self.fecha.strftime("%d-%m-%Y")],
-        }
-        plasticos_df = pd.DataFrame(plasticos_dic)
-        DBC.insert(self.cnx_nac,plasticos_df,"PLASTICOS")
-        self.ids_plasticos = DBC.find_ids(self.cnx_nac,"PLASTICOS").to_list()
-        self.ids_plasticos.sort()
+    self.confirm_action("¿Seguro que desea crear este registro?")
+    self.confirm_action("¿Seguro que desea crearlo?")
+
+    if self.cfm:
+        codinvs = DBC.find_indexes(self.cnx_nac, "CODINV", "PLASTICOS").to_list()
+        print(codinvs)
+        print(int(self.et_codigo_inventario.get()))
+        if int(self.et_codigo_inventario.get()) in codinvs:
+            self.message = alert_message(self, self.controller, "El codigo de inventario indicado ya existe\nPor favor verificalo")
+        else:
+            plasticos_dic = {
+                'CODINV' : [int(self.et_codigo_inventario.get())],
+                'CODFRANQ' : [int(self.et_codigo_franquicia.get())],
+                'TIPOTARJETA' : [self.et_tipo_tarjeta.get()],
+                'CODBIN' : [int(self.et_bin.get())],
+                'CODLOGO' : [int(self.et_logo.get())],
+                'TIPOPRODUC' : [self.et_tipo_producto.get()],
+                'CLASE' : [self.et_clase.get()],
+                'NOMBRE' : [self.et_nombre.get()],
+                'ACUMULACION' : [self.et_acumulacion.get()],
+                'TIPOREALCE' : [self.et_realce.get()],
+                'OBSERVACIONES' : [self.tb_observaciones.get("1.0","end-1c")],
+                'SEGMENTO' : [self.et_segmento.get()],
+                'DESCONT' : [int(self.chk_descontinuado.get())],
+                'PIDEMIACALI':[int(self.chk_idemia_produc_cali.get())],
+                'PTHALESIZTA':[int(self.chk_thales_produc_iztapalapa.get())],
+                'PTHALESASIA':[int(self.chk_thales_produc_asia.get())],
+                'RIDEMIACALI':[int(self.chk_idemia_real_cali.get())],
+                'RIDEMIABOGO':[int(self.chk_idemia_real_bogo.get())],
+                'RIDEMIAMEDE':[int(self.chk_idemia_real_mede.get())],
+                'RIDEMIAPERE':[int(self.chk_idemia_real_pere.get())],
+                'RIDEMIABUCA':[int(self.chk_idemia_real_buca.get())],
+                'RIDEMIABARRA':[int(self.chk_idemia_real_bquilla.get())],
+                'RTHALESBOGO':[int(self.chk_thales_real_bogo.get())],
+                'CANTIDAD' : [int(self.et_cantidad.get())],
+                'FECHA' : [self.fecha.strftime("%Y%m%d")],
+            }
+            plasticos_df = pd.DataFrame(plasticos_dic)
+            DBC.insert(self.cnx_nac,plasticos_df,"PLASTICOS")
+            self.ids_plasticos = DBC.find_indexes(self.cnx_nac, "ID","PLASTICOS").to_list()
+            self.ids_plasticos.sort()
+            self.cfm = False
+
+def update(self):
+    ''' Función que se encarga de guardar los datos ingresados en los campos de
+    creación de plasticos; guarda en un diccionario los datos en los entry
+    para convertirlo en un DataFrame y posteriormente enviarlo a la función
+    de la ODBC que guarda los plasticos.
+    SE REVISA QUE EL CODIGO DE INVENTARIO NO EXISTA'''
+
+    self.confirm_action("¿Seguro que desea actualizar este registro?")
+    self.confirm_action("¿Seguro que desea actualizarlo?")
+
+    if self.cfm:
+        codinvs = DBC.find_indexes(self.cnx_nac, "CODINV", "PLASTICOS").to_list()
+        print(codinvs)
+        print(int(self.et_codigo_inventario.get()))
+        if int(self.et_codigo_inventario.get()) not in codinvs:
+            self.message = alert_message(self, self.controller, "No existe ese Codigo de inventario \n Por favor verificalo")
+        else:
+            plasticos_dic = {
+                'CODINV' : [int(self.et_codigo_inventario.get())],
+                'CODFRANQ' : [int(self.et_codigo_franquicia.get())],
+                'TIPOTARJETA' : [self.et_tipo_tarjeta.get()],
+                'CODBIN' : [int(self.et_bin.get())],
+                'CODLOGO' : [int(self.et_logo.get())],
+                'TIPOPRODUC' : [self.et_tipo_producto.get()],
+                'CLASE' : [self.et_clase.get()],
+                'NOMBRE' : [self.et_nombre.get()],
+                'ACUMULACION' : [self.et_acumulacion.get()],
+                'TIPOREALCE' : [self.et_realce.get()],
+                'OBSERVACIONES' : [self.tb_observaciones.get("1.0","end-1c")],
+                'SEGMENTO' : [self.et_segmento.get()],
+                'DESCONT' : [int(self.chk_descontinuado.get())],
+                'PIDEMIACALI':[int(self.chk_idemia_produc_cali.get())],
+                'PTHALESIZTA':[int(self.chk_thales_produc_iztapalapa.get())],
+                'PTHALESASIA':[int(self.chk_thales_produc_asia.get())],
+                'RIDEMIACALI':[int(self.chk_idemia_real_cali.get())],
+                'RIDEMIABOGO':[int(self.chk_idemia_real_bogo.get())],
+                'RIDEMIAMEDE':[int(self.chk_idemia_real_mede.get())],
+                'RIDEMIAPERE':[int(self.chk_idemia_real_pere.get())],
+                'RIDEMIABUCA':[int(self.chk_idemia_real_buca.get())],
+                'RIDEMIABARRA':[int(self.chk_idemia_real_bquilla.get())],
+                'RTHALESBOGO':[int(self.chk_thales_real_bogo.get())],
+                'CANTIDAD' : [int(self.et_cantidad.get())],
+                'FECHA' : [self.fecha.strftime("%Y%m%d")],
+            }
+            plasticos_df = pd.DataFrame(plasticos_dic)
+            DBC.update(self.cnx_nac,plasticos_df,int(self.et_id.get()),"PLASTICOS")
+            self.cfm = False
 
 def plastico (self):
     #Label y entry (no activo) de la ID del plastico
@@ -788,7 +868,7 @@ def plastico (self):
         relx = 0.83,
         rely = 0.12
     )
-    #Botón que busca según el ID en et_id
+    #Botón que busca según el CODINV en et_codigo_inventario
     self.bt_search = ctk.CTkButton(
         self.tab_parametros.tab(self.tab1),
         **style.SMALLBUTTONSTYLE,
@@ -800,4 +880,29 @@ def plastico (self):
         relx = 0.83,
         rely = 0.26
     )
+    #Botón eliminar
+    self.bt_search = ctk.CTkButton(
+        self.tab_parametros.tab(self.tab1),
+        **style.SMALLBUTTONSTYLE,
+        text = "Eliminar",
+        command = self.delete_by_codinv_con,
+        width= 90
+    )
+    self.bt_search.place(
+        relx = 0.83,
+        rely = 0.33
+    )
+    #Botón actualizar
+    self.bt_search = ctk.CTkButton(
+        self.tab_parametros.tab(self.tab1),
+        **style.SMALLBUTTONSTYLE,
+        text = "Editar",
+        command = self.update_con,
+        width= 90
+    )
+    self.bt_search.place(
+        relx = 0.83,
+        rely = 0.40
+    )
+    
     

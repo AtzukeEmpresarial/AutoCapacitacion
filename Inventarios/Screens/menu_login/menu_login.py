@@ -94,7 +94,7 @@ class menu_login(ctk.CTkFrame):
             padx = (20,20),
             expand = True
         )
-        self.et_pass.bind("<Enter>", command= self.check)
+        #self.et_pass.bind("<Enter>", command= self.check)
         #Botón para ingresar         
         self.bt_log = ctk.CTkButton(
             flog,

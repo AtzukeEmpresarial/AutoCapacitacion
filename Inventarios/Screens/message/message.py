@@ -30,27 +30,6 @@ class login_message(ctk.CTkToplevel):
         self.label.pack(padx=20, pady=20)
         self.attributes("-topmost",True)
         self.focus()
-
-class file_message(ctk.CTkToplevel):
-    '''Inicia un frame que se representa como una ventana emergente
-    para indicarle al usuario que la ruta que ingresada o el archvo 
-    seleccionado no es correcto, se sobrepone a todos los demás frames'''
-    def __init__(self, parent, self_find):
-        super().__init__(parent)
-        self.geometry("600x60+600+200")
-        self.configure(fg_color = style.GRAYBLACK)
-        self.title("ADVERTENCIA")
-        self.controller = self_find.controller
-        self.label = ctk.CTkLabel(
-            self,
-            text = "La ruta ingresada es incorrecta o el archivo no es compatiple",
-            **style.STYLELABEL
-        )
-        self.label.pack(padx=20, pady=20)
-        self.attributes("-topmost",True)
-        self.focus()
-        self.focus_set()
-
 class width_message(ctk.CTkToplevel):
     '''Inicia un frame que se representa como una ventana emergente
     para indicarle al usuario que el numero de caracteres que está ingresando
@@ -70,21 +49,85 @@ class width_message(ctk.CTkToplevel):
         self.attributes("-topmost",True)
         self.focus()
 
-class used_codinv_message(ctk.CTkToplevel):
+class alert_message(ctk.CTkToplevel):
     '''Inicia un frame que se representa como una ventana emergente
-    para indicarle al usuario que el numero de caracteres que está ingresando
-    es mayor al que es permitido'''
-    def __init__(self, parent, controller):
+    para indicarle al usuario que el codigo de inventario ya existe'''
+    def __init__(self, parent, controller, message: str):
         super().__init__(parent)
-        self.geometry("500x60+800+300")
+        self.geometry("600x120+800+300")
         self.configure(fg_color = style.GRAYBLACK)
         self.title("ADVERTENCIA")
         self.controller = controller
         self.label = ctk.CTkLabel(
             self,
-            text = "El codigo de inventario ingresado ya existe",
+            text = message,
             **style.STYLELABEL
         )
         self.label.pack(padx=20, pady=20)
         self.attributes("-topmost",True)
         self.focus()
+
+class confirm_message(ctk.CTkToplevel):
+    '''Inicia un frame que se representa como una ventana emergente
+    para preguntarle al usuario si está seguro de continuar con la acción elegida'''
+    def __init__(self, parent, controller, message: str):
+        super().__init__(parent)
+        self.geometry("700x100+450+400")
+        self.configure(fg_color = style.GRAYBLACK)
+        self.title("ADVERTENCIA")
+        self.controller = controller
+        self.parent = parent
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0,weight=2)
+        self.grid_rowconfigure(1,weight=1)            
+
+        self.label = ctk.CTkLabel(
+            self,
+            text = message,
+            **style.STYLELABEL
+        )
+        self.label.grid(
+            row = 0, 
+            column = 0, 
+            columnspan = 2, 
+            sticky = ctk.NSEW
+        )
+        self.attributes("-topmost",True)
+        self.focus()
+        #Botón Sí
+        self.bt_search = ctk.CTkButton(
+            self,
+            **style.SMALLBUTTONSTYLE,
+            text = "Sí",
+            command = self.si,
+            width= 90
+        )
+        self.bt_search.grid(
+            row = 1,
+            column = 0,
+            sticky = ctk.NSEW
+        )
+        #Botón No
+        self.bt_search = ctk.CTkButton(
+            self,
+            **style.SMALLBUTTONSTYLE,
+            text = "NO",
+            command = self.no,
+            width= 90
+        )
+        self.bt_search.grid(
+            row = 1,
+            column = 1,
+            sticky = ctk.NSEW
+        )
+        parent.wait_window(self)
+    
+    def si(self):
+        """Cambia el estado de la variable continuar a True y cierra el mensaje"""
+        self.parent.cfm = True
+        self.destroy()
+    def no(self):
+        """Cambia el estado de la variable continuar a False y cierra el mensaje"""
+        self.parent.cfm = False
+        self.destroy()
