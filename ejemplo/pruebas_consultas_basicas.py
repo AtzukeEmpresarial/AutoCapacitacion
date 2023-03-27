@@ -29,7 +29,40 @@ filter_credito = df_alimentacion_credito_sucio.CLSTRJ.isin(lista_credito)
 filter_debito = df_alimentacion_debito_sucio.CLSTRJ.isin(lista_debito)
 df_alimentacion_credito = df_alimentacion_credito_sucio[filter_credito]
 df_alimentacion_debito = df_alimentacion_debito_sucio[filter_debito]
-#insertamos el codigo de inventario y cambiamos el nombre
+#Separamos todos los registros basados en los operadores
+#THALES
+filter_credito_thales = df_alimentacion_credito.DSCFBR.isin(["THALES              ","THALES.             "])
+filter_debito_thales = df_alimentacion_debito.DSCFBR.isin(["THALES              ","THALES.             "])
+df_credito_thales = df_alimentacion_credito[filter_credito_thales]
+df_debito_thales = df_alimentacion_debito[filter_debito_thales]
+#IDEMIA
+filter_credito_idemia = df_alimentacion_credito.DSCFBR.isin(["IDEMIA              ","IDEMIA.             "])
+filter_debito_idemia = df_alimentacion_debito.DSCFBR.isin(["IDEMIA              ","IDEMIA.             "])
+df_credito_idemia = df_alimentacion_credito[filter_credito_idemia]
+df_debito_idemia = df_alimentacion_debito[filter_debito_idemia]
+
+#Cambiamos el nombre de una columna en debito que no concuerda
+df_debito_thales.rename(columns={"OFICINA": "OFICLI"}, inplace= True)
+df_debito_idemia.rename(columns={"OFICINA": "OFICLI"}, inplace= True)
+#Unimos credito y debito de cada operador
+df_thales = pd.concat([df_credito_thales, df_debito_thales], ignore_index = True)
+df_idemia = pd.concat([df_credito_idemia, df_debito_idemia],  ignore_index = True)
+#Verificamos que la sucursal esté actualizada, sino, la remplazamos
+for index, row in df_idemia.iterrows():
+    if df_sucursales_cerradas.CODIGOOFICINA.isin([row["OFICLI"]]).any():
+          for index, row2 in df_sucursales_cerradas.iterrows():
+               if row2["CODIGOOFICINA"] == row["OFICLI"]:
+                    if row2["CODIGORECEPTOR"] != -2147483648:
+                         df_idemia.OFICLI.replace({row["OFICLI"] : row2["CODIGORECEPTOR"]}, inplace = True)
+for index, row in df_thales.iterrows():
+    if df_sucursales_cerradas.CODIGOOFICINA.isin([row["OFICLI"]]).any():
+          for index, row2 in df_sucursales_cerradas.iterrows():
+               if row2["CODIGOOFICINA"] == row["OFICLI"]:
+                    if row2["CODIGORECEPTOR"] != -2147483648:
+                         df_thales.OFICLI.replace({row["OFICLI"] : row2["CODIGORECEPTOR"]}, inplace = True)
+#Agregamos plantas a cada registro según nuestra tabla de plantas por sucursales.
+df_thales_completo = pd.merge(df_thales, df_plantas, left_on="OFICLI", right_on="CODIGOOFICINA", how = "left")
+df_idemia_completo = pd.merge(df_idemia, df_plantas, left_on="OFICLI", right_on="CODIGOOFICINA", how = "left")
 
 
 
