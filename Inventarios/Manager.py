@@ -1,6 +1,7 @@
 #se importan las librerias que nos permiten generar una interfaz grafica
 import tkinter as tk
 import customtkinter as ctk
+
 #se importan las constantes que se usaran repetidamente en la creación del contenedor principal.
 from constants import style
 #Se importan las pantallas que se veran reflejeadas en el contenerdor.

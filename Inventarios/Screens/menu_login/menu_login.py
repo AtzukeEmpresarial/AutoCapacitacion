@@ -34,6 +34,8 @@ class menu_login(ctk.CTkFrame):
             self.controller.active_process()
             self.login_message = login_message(self, self.controller,connection_state)
             self.destroy()
+        else:
+            self.login_message = login_message(self, self.controller,connection_state)
 
     def init_log (self):
         """

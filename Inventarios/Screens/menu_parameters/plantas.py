@@ -53,7 +53,8 @@ def insert_planta(self):
             'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
             'IDOPERADOR' : [self.cb_proveedor_planta.get()],
             'LT' : [int(self.et_lt_planta.get())],
-            'ACTIVA' : [int(self.chk_planta_inactiva.get())]
+            'ACTIVA' : [int(self.chk_planta_inactiva.get())],
+            'PRODUCCION' : [int(self.chk_planta_produccion.get())]
         }
         plantas_df = pd.DataFrame(plantas_dic)
         DBC.insert(self.cnx_nac,plantas_df,"PLANTAS")
@@ -68,6 +69,7 @@ def clean_planta (self):
     self.proveedor_planta_var.set("")
     self.et_lt_planta.delete(0, ctk.END)
     self.planta_inactiva_var.set(False)
+    self.planta_produccion_var.set(False)
 
 def load_in_widgets_planta(self, df: pd.DataFrame):
     '''Carga la información contenida en un dataframe en los widgets de planta,
@@ -79,12 +81,14 @@ def load_in_widgets_planta(self, df: pd.DataFrame):
     self.proveedor_planta_var.set("")
     self.et_lt_planta.delete(0, ctk.END)
     self.planta_inactiva_var.set(False)
+    self.planta_produccion_var.set(False)
 
     self.ubicacion_planta_var.set(df.loc[0,"UBICACION"])
     self.tb_descripcion_planta.insert(1.0,df.loc[0,"DESCRIPCION"])
     self.proveedor_planta_var.set(df.loc[0,"IDOPERADOR"])
     self.et_lt_planta.insert(0, df.loc[0,"LT"])
     self.planta_inactiva_var.set(str(df.loc[0,"ACTIVA"]))
+    self.planta_produccion_var.set(str(df.loc[0,"PRODUCCION"]))
 
 def delete_by_id_planta(self):
     '''Función que se encarga de eliminar una planta según su ID'''
@@ -94,6 +98,8 @@ def delete_by_id_planta(self):
     if self.cfm:
         DBC.delete(self.cnx_nac,"ID", int(self.et_id_planta.get()), "PLANTAS")
         self.et_id_planta.delete(0,ctk.END)
+        self.ids_plantas = DBC.find_indexes(self.cnx_nac, "ID","PLANTAS").to_list()
+        self.ids_plantas.sort()
         clean_planta(self)
 
 def update_planta(self):
@@ -117,7 +123,8 @@ def update_planta(self):
             'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
             'IDOPERADOR' : [self.cb_proveedor_planta.get()],
             'LT' : [int(self.et_lt_planta.get())],
-            'ACTIVA' : [int(self.chk_planta_inactiva.get())]
+            'ACTIVA' : [int(self.chk_planta_inactiva.get())],
+            'PRODUCCION' : [int(self.chk_planta_produccion.get())]
             }
             plantas_df = pd.DataFrame(plantas_dic)
             DBC.update(self.cnx_nac,plantas_df,int(self.et_id_planta.get()),"PLANTAS")
@@ -137,7 +144,9 @@ def plantas (self):
     )
     self.et_id_planta = ctk.CTkEntry(
         self.tab_parametros.tab(self.tab2),
-        placeholder_text = ""
+        placeholder_text = "ID",
+        validate = "key",
+        validatecommand = (self.controller.register(validations.validate_input_numeric),"%P")
     )
     self.et_id_planta.place(
         relx = 0.07,
@@ -179,14 +188,16 @@ def plantas (self):
     )
     self.et_lt_planta = ctk.CTkEntry(
         self.tab_parametros.tab(self.tab2),
-        placeholder_text = ""
+        placeholder_text = "",
+        validate = "key",
+        validatecommand = (self.controller.register(validations.validate_input_numeric),"%P")
     )
     self.et_lt_planta.place(
         relx = 0.76,
         rely = 0.05,
         relwidth = 0.05
     )
-    #Label y Combobox del proveedor de la
+    #Label y Combobox del proveedor de la planta
     self.lb_proveedor_planta = ctk.CTkLabel(
         self.tab_parametros.tab(self.tab2),
         **style.STYLELABEL,
@@ -200,7 +211,7 @@ def plantas (self):
     self.proveedor_planta_var = ctk.StringVar()
     self.cb_proveedor_planta = ctk.CTkComboBox(
         self.tab_parametros.tab(self.tab2),
-        values = ["THALES", "IDEMIA"],
+        values = self.proveedores,
         variable = self.proveedor_planta_var
     )
     self.cb_proveedor_planta.place(
@@ -238,8 +249,24 @@ def plantas (self):
         rely = 0.21,
         relwidth = 0.77
     )
-    #--------------------------------------------------------------
-        #Botón que avanza entre los diferentes plasticos
+    #checkBox si planta es de producción
+    self.planta_produccion_var = ctk.StringVar()
+    self.chk_planta_produccion = ctk.CTkCheckBox(
+        self.tab_parametros.tab(self.tab2),
+        text = "Planta de producción",
+        **style.STYLELABEL,
+        variable = self.planta_produccion_var,
+        onvalue= "1",
+        offvalue= "0",
+        checkbox_width = 20,
+        checkbox_height = 20
+    )
+    self.chk_planta_produccion.place(
+        relx = 0.30,
+        rely = 0.38
+    )
+    #----------------------BOTONES----------------------------------------
+        #Botón que avanza entre las diferentes plantas
     self.bt_next_planta = ctk.CTkButton(
         self.tab_parametros.tab(self.tab2),
         **style.SMALLBUTTONSTYLE,
@@ -251,7 +278,7 @@ def plantas (self):
         relx = 0.905,
         rely = 0.05
     )
-    #Botón que retrocede entre los diferentes plasticos
+    #Botón que retrocede entre las diferentes plantas
     self.bt_previous_planta = ctk.CTkButton(
         self.tab_parametros.tab(self.tab2),
         **style.SMALLBUTTONSTYLE,
@@ -263,7 +290,7 @@ def plantas (self):
         relx = 0.83,
         rely = 0.05
     )
-    #Botón que guardar el plastico a la base de datos
+    #Botón que guarda la planta en la base de datos
     self.bt_load_planta = ctk.CTkButton(
         self.tab_parametros.tab(self.tab2),
         **style.SMALLBUTTONSTYLE,
@@ -287,7 +314,7 @@ def plantas (self):
         relx = 0.83,
         rely = 0.12
     )
-    #Botón que busca según el CODINV en et_codigo_inventario
+    #Botón que busca según el ID de la planta en PLANTAS
     self.bt_search_planta = ctk.CTkButton(
         self.tab_parametros.tab(self.tab2),
         **style.SMALLBUTTONSTYLE,
@@ -299,7 +326,7 @@ def plantas (self):
         relx = 0.83,
         rely = 0.26
     )
-    #Botón eliminar
+    #Botón eliminar que elimina una planta según su ID
     self.bt_delete_planta = ctk.CTkButton(
         self.tab_parametros.tab(self.tab2),
         **style.SMALLBUTTONSTYLE,
@@ -311,7 +338,7 @@ def plantas (self):
         relx = 0.83,
         rely = 0.33
     )
-    #Botón actualizar
+    #Botón actualizar que actualiza una planta según su ID
     self.bt_edit_planta = ctk.CTkButton(
         self.tab_parametros.tab(self.tab2),
         **style.SMALLBUTTONSTYLE,

@@ -11,7 +11,7 @@ class login_message(ctk.CTkToplevel):
     erroneos.'''
     def __init__(self, parent, controller,case):
         super().__init__(parent)
-        self.geometry("500x60+800+300")
+        self.geometry("700x100+600+400")
         self.configure(fg_color = style.GRAYBLACK)
         self.title("ADVERTENCIA")
         self.controller = controller

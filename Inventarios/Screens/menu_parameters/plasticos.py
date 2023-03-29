@@ -297,7 +297,7 @@ def plastico (self):
     )
     self.et_id = ctk.CTkEntry(
         self.tab_parametros.tab(self.tab1),
-        placeholder_text = ""
+        placeholder_text = "ID"
     )
     self.et_id.place(
         relx = 0.07,

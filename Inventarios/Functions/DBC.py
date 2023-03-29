@@ -112,7 +112,7 @@ def find_indexes(cnx_nac,index_name: str, tabla: str):
     indicado de la tabla.'''
     sql = '''SELECT * FROM CISLIBPR.{}'''.format(tabla)
     indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
-    indexes = indexes_df.loc[:,index_name]
+    indexes = indexes_df.loc[:,index_name] # type: ignore
     return(indexes)
 
 def delete(cnx_nac,column: str, reg: int, tabla: str):
