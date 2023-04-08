@@ -18,7 +18,7 @@ cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID={};PWD={}'.format(user,passw
 alerta = False 
 #Querys
 sql_credito = "SELECT * FROM CISLIBPR.ACREALCECR WHERE FECNOV = {}".format(fecha)
-sql_debito = "SELECT * FROM CISLIBPR.ACREALCECR WHERE FECNOV = {}".format(fecha)
+sql_debito = "SELECT * FROM CISLIBPR.ACREALCEDB WHERE FECNOV = {}".format(fecha)
 sql_plantas = "SELECT * FROM CISLIBPR.SUCURSALES"
 sql_sucursales_cerradas = "SELECT * FROM CISLIBPR.SUCURSALESCERRADAS"
 sql_tarjetas_credito = "select CODIGOINVENTARIO, CLASETARJETA, NOMBRE from cislibpr.CODIGOSINVENTARIO where tipotarjeta = 'CREDITO'"
@@ -44,15 +44,13 @@ df_alimentacion_debito = df_alimentacion_debito_sucio[filter_debito]
 #Agregamos la columna con el proceso
 df_alimentacion_credito["PROCESO"] = "CREDITO"
 df_alimentacion_debito["PROCESO"] = "DEBITO"
-#Los Stickers y manillas NO deben salir por IDEMIA
+#Los Stickers y manillas NO deben salir por IDEMIA, se genera alerta
 # además cambiamos todos los carbajal por IDEMIA
 for index,row in df_alimentacion_credito.iterrows():
      if row["CLSTRJ"] in [118,117] and row["DSCFBR"] in ["IDEMIA              ","IDEMIA.             "]:
-          df_alimentacion_credito.DSCFBR.at[index, "DSCFBR"] = "THALES              "
           alerta = True
 for index,row in df_alimentacion_debito.iterrows():
      if row["CLSTRJ"] in [118,117] and row["DSCFBR"] in ["IDEMIA              ","IDEMIA.             "]:
-          df_alimentacion_debito.DSCFBR.at[index, "DSCFBR"] = "THALES              "
           alerta = True
      if row["DSCFBR"] in ["CARVAJALBG          ", "CARVAJALCL          ", "CARVAJALMD          "]:
           df_alimentacion_debito.at[index, "DSCFBR"] = "IDEMIA              "
@@ -75,13 +73,13 @@ df_thales = pd.concat([df_credito_thales, df_debito_thales], ignore_index = True
 df_idemia = pd.concat([df_credito_idemia, df_debito_idemia],  ignore_index = True)
 #Verificamos que la sucursal esté actualizada, sino, la remplazamos
 for index, row in df_idemia.iterrows():
-    if df_sucursales_cerradas.CODIGOOFICINA.isin([row["OFICLI"]]).any():
+    if row["OFICLI"] in df_sucursales_cerradas.CODIGOOFICINA.values:
           for index2, row2 in df_sucursales_cerradas.iterrows():
                if row2["CODIGOOFICINA"] == row["OFICLI"]:
                     if row2["CODIGORECEPTOR"] != -2147483648:
                          df_idemia.at[index,"OFICLI"] = row2["CODIGORECEPTOR"]
 for index, row in df_thales.iterrows():
-    if df_sucursales_cerradas.CODIGOOFICINA.isin([row["OFICLI"]]).any():
+    if row["OFICLI"] in df_sucursales_cerradas.CODIGOOFICINA.values:
           for index2, row2 in df_sucursales_cerradas.iterrows():
                if row2["CODIGOOFICINA"] == row["OFICLI"]:
                     if row2["CODIGORECEPTOR"] != -2147483648:
@@ -97,15 +95,14 @@ for index, row in df_thales_completo.iterrows():
      if row["PLANTAREALCE"] != "BOGOTA":
           df_thales_completo.at[index, "PLANTAREALCE"] = "BOGOTA"
 for index, row in df_idemia_completo.iterrows():
-     if row["CLSTRJ"] == 110:
+     if row["CLSTRJ"] in [110,116]:
           df_idemia_completo.at[index, "PLANTAREALCE"] = "MEDELLIN"
-     if row["CIUDAD"] == "BUCARAMANGA":
-          if row["CLSTRJ"] == 104:
-               df_idemia_completo.at[index, "PLANTAREALCE"] = "BOGOTA"
-     if row["CLSTRJ"] == 107:
+     if row["CLSTRJ"] == 104 and row["PLANTAREALCE"] == "BUCARAMANGA":
+          df_idemia_completo.at[index, "PLANTAREALCE"] = "BOGOTA"
+     if row["CLSTRJ"] in [107,113]:
           df_idemia_completo.at[index, "PLANTAREALCE"] = "CALI"
 for index, row in df_idemia_completo.iterrows():    
-     if row["CLSTRJ"] in [115,111,105,112,106]:
+     if row["CLSTRJ"] in [115,109,111,105,112,106, 83]:
           df_idemia_completo.at[index, "PLANTAREALCE"] = "BOGOTA"
      
 #Agregamos el codigo de inventario
@@ -151,10 +148,16 @@ df_thales_completo.drop(["OFICLI"], axis=1, inplace= True)
 df_idemia_completo.drop(["OFICLI"], axis=1, inplace = True)
 #Reordenamos credito y debito para facilitar la comprensión y uso de datos.
 df_alimentacion_credito = df_alimentacion_credito[["PROCESO","CLSTRJ","DSCCLS","CLASE TARJETA", "DSCTRN", "FECNOV", "CDGPED","OFICLI","PLANTA", "NIT", "NOMBRE", "DSCFBR"]]
-df_alimentacion_debito = df_alimentacion_debito[["PROCESO","CLSTRJ","DSCCLS","CLASE TARJETA", "DSCTRN", "FECNOV", "CDGPED","OFICLI","PLANTA", "NIT", "NOMBRE", "DSCFBR"]]
+df_alimentacion_debito = df_alimentacion_debito[["PROCESO","CLSTRJ","DSCCLS","CLASE TARJETA", "DSCTRN", "FECNOV", "CDGPED","OFICINA","PLANTA", "NIT", "NOMBRE", "DSCFBR"]]
 #Reordenamos thales e idemia completos para facilitar comprensión y uso de datos.
-df_thales_completo = df_thales_completo[["PROCESO","CODINV","CLSTRJ","DSCCLS", "NOMBRETARJETA", "DSCTRN", "FECNOV", "CDGPED","CODIGOOFICINA", "NIT", "NOMBRE","PLANTAREALCE", "DSCFBR", "SUCURSAL", "CIUDAD" ]]
-df_idemia_completo = df_idemia_completo[["PROCESO","CODINV","CLSTRJ","DSCCLS", "NOMBRETARJETA", "DSCTRN", "FECNOV", "CDGPED","CODIGOOFICINA", "NIT", "NOMBRE","PLANTAREALCE", "DSCFBR", "SUCURSAL", "CIUDAD" ]]
+df_thales_completo = df_thales_completo[["PROCESO","CODINV","CLSTRJ","DSCCLS", "NOMBRETARJETA", "DSCTRN", "FECNOV", "CDGPED","CODIGOOFICINA","PLANTAREALCE", "NIT", "NOMBRE", "DSCFBR", "SUCURSAL", "CIUDAD" ]]
+df_idemia_completo = df_idemia_completo[["PROCESO","CODINV","CLSTRJ","DSCCLS", "NOMBRETARJETA", "DSCTRN", "FECNOV", "CDGPED","CODIGOOFICINA","PLANTAREALCE", "NIT", "NOMBRE", "DSCFBR", "SUCURSAL", "CIUDAD" ]]
+df_thales_completo.rename(columns={"NOMBRETARJETA": "CLASE TARJETA"}, inplace= True)
+df_thales_completo.rename(columns={"CODIGOOFICINA": "OFICLI"}, inplace= True)
+df_thales_completo.rename(columns={"PLANTAREALCE": "PLANTA"}, inplace= True)
+df_idemia_completo.rename(columns={"NOMBRETARJETA": "CLASE TARJETA"}, inplace= True)
+df_idemia_completo.rename(columns={"CODIGOOFICINA": "OFICLI"}, inplace= True)
+df_idemia_completo.rename(columns={"PLANTAREALCE": "PLANTA"}, inplace= True)
 #Exportamos a excel el resultado en un solo documento
 with pd.ExcelWriter('Output.xlsx') as writer: 
     df_alimentacion_credito.to_excel(writer, sheet_name='Credito', index= False)

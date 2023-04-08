@@ -12,7 +12,7 @@ def delete_by_codinv(self):
     self.confirm_action("¿Seguro que desea eliminarlo?")
 
     if self.cfm:
-        DBC.delete(self.cnx_nac,"CODINV", int(self.et_codigo_inventario.get()), "PLASTICOS")
+        DBC.delete(self, self.cnx_nac,"CODINV", int(self.et_codigo_inventario.get()), "PLASTICOS")
         self.et_id.delete(0,ctk.END)
         self.et_codigo_inventario.delete(0,ctk.END)
         self.et_codigo_franquicia.delete(0,ctk.END)
@@ -230,7 +230,7 @@ def insert(self):
                 'FECHA' : [self.fecha.strftime("%Y%m%d")],
             }
             plasticos_df = pd.DataFrame(plasticos_dic)
-            DBC.insert(self.cnx_nac,plasticos_df,"PLASTICOS")
+            DBC.insert(self, self.cnx_nac,plasticos_df,"PLASTICOS")
             self.ids_plasticos = DBC.find_indexes(self.cnx_nac, "ID","PLASTICOS").to_list()
             self.ids_plasticos.sort()
             self.cfm = False
@@ -280,10 +280,15 @@ def update(self):
                 'FECHA' : [self.fecha.strftime("%Y%m%d")],
             }
             plasticos_df = pd.DataFrame(plasticos_dic)
-            DBC.update(self.cnx_nac,plasticos_df,int(self.et_id.get()),"PLASTICOS")
+            DBC.update(self, self.cnx_nac,plasticos_df,int(self.et_id.get()),"PLASTICOS")
             self.cfm = False
 
 def plastico (self):
+    #Carga inicial de plantas
+    self.plantas_thales = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "THALES" ).to_list()
+    self.plantas_thales.sort()
+    self.plantas_idemia = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "IDEMIA" ).to_list()
+    self.plantas_thales.sort()
     #Label y entry (no activo) de la ID del plastico
     self.lb_id = ctk.CTkLabel(
         self.tab_parametros.tab(self.tab1),

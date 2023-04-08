@@ -69,7 +69,7 @@ def insert_proveedor(self):
             'DESCRIPCION' : [self.tb_descripcion_proveedor.get("1.0","end-1c")] 
         }
         proveedores_df = pd.DataFrame(proveedores_dic)
-        DBC.insert(self.cnx_nac,proveedores_df,"PROVEEDORES")
+        DBC.insert(self, self.cnx_nac,proveedores_df,"PROVEEDORES")
         self.ids_proveedores = DBC.find_indexes(self.cnx_nac, "ID","PROVEEDORES").to_list()
         self.ids_proveedores.sort()
         self.proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
@@ -97,7 +97,7 @@ def update_proveedor(self):
             'DESCRIPCION' : [self.tb_descripcion_proveedor.get("1.0","end-1c")] 
             }
             proveedores_df = pd.DataFrame(proveedores_dic)
-            DBC.update(self.cnx_nac,proveedores_df, int(self.et_id_proveedor.get()),"PROVEEDORES")
+            DBC.update(self, self.cnx_nac,proveedores_df, int(self.et_id_proveedor.get()),"PROVEEDORES")
             self.cfm = False
 
 def clean_proveedor (self):
@@ -115,7 +115,7 @@ def delete_by_id_proveedor(self):
     self.confirm_action("¿Seguro que desea eliminarlo?")
 
     if self.cfm:
-        DBC.delete(self.cnx_nac,"ID", int(self.et_id_proveedor.get()), "PROVEEDORES")
+        DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_proveedor.get()), "PROVEEDORES")
         self.et_id_proveedor.delete(0,ctk.END)
         self.ids_proveedores = DBC.find_indexes(self.cnx_nac, "ID","PROVEEDORES").to_list()
         self.ids_proveedores.sort()
@@ -127,7 +127,6 @@ def proveedores (self):
     #Carga inicial de proveedores
     self.proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
     self.proveedores.sort()
-    print (self.proveedores)
     #Label y entry del ID del proveedor
     self.lb_id_proveedor = ctk.CTkLabel(
         self.tab_parametros.tab(self.tab3),

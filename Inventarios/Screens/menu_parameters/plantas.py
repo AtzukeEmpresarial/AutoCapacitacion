@@ -51,13 +51,13 @@ def insert_planta(self):
         plantas_dic = {
             'UBICACION' : [self.cb_ubicacion_planta.get()],
             'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
-            'IDOPERADOR' : [self.cb_proveedor_planta.get()],
+            'OPERADOR' : [self.cb_proveedor_planta.get()],
             'LT' : [int(self.et_lt_planta.get())],
             'ACTIVA' : [int(self.chk_planta_inactiva.get())],
             'PRODUCCION' : [int(self.chk_planta_produccion.get())]
         }
         plantas_df = pd.DataFrame(plantas_dic)
-        DBC.insert(self.cnx_nac,plantas_df,"PLANTAS")
+        DBC.insert(self, self.cnx_nac,plantas_df,"PLANTAS")
         self.ids_plantas = DBC.find_indexes(self.cnx_nac, "ID","PLANTAS").to_list()
         self.ids_plantas.sort()
         self.cfm = False
@@ -85,7 +85,7 @@ def load_in_widgets_planta(self, df: pd.DataFrame):
 
     self.ubicacion_planta_var.set(df.loc[0,"UBICACION"])
     self.tb_descripcion_planta.insert(1.0,df.loc[0,"DESCRIPCION"])
-    self.proveedor_planta_var.set(df.loc[0,"IDOPERADOR"])
+    self.proveedor_planta_var.set(df.loc[0,"OPERADOR"])
     self.et_lt_planta.insert(0, df.loc[0,"LT"])
     self.planta_inactiva_var.set(str(df.loc[0,"ACTIVA"]))
     self.planta_produccion_var.set(str(df.loc[0,"PRODUCCION"]))
@@ -96,7 +96,7 @@ def delete_by_id_planta(self):
     self.confirm_action("¿Seguro que desea eliminarlo?")
 
     if self.cfm:
-        DBC.delete(self.cnx_nac,"ID", int(self.et_id_planta.get()), "PLANTAS")
+        DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_planta.get()), "PLANTAS")
         self.et_id_planta.delete(0,ctk.END)
         self.ids_plantas = DBC.find_indexes(self.cnx_nac, "ID","PLANTAS").to_list()
         self.ids_plantas.sort()
@@ -121,13 +121,13 @@ def update_planta(self):
             plantas_dic = {
             'UBICACION' : [self.cb_ubicacion_planta.get()],
             'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
-            'IDOPERADOR' : [self.cb_proveedor_planta.get()],
+            'OPERADOR' : [self.cb_proveedor_planta.get()],
             'LT' : [int(self.et_lt_planta.get())],
             'ACTIVA' : [int(self.chk_planta_inactiva.get())],
             'PRODUCCION' : [int(self.chk_planta_produccion.get())]
             }
             plantas_df = pd.DataFrame(plantas_dic)
-            DBC.update(self.cnx_nac,plantas_df,int(self.et_id_planta.get()),"PLANTAS")
+            DBC.update(self, self.cnx_nac,plantas_df,int(self.et_id_planta.get()),"PLANTAS")
             self.cfm = False
 
 def plantas (self):
@@ -223,7 +223,7 @@ def plantas (self):
     self.planta_inactiva_var = ctk.StringVar()
     self.chk_planta_inactiva = ctk.CTkCheckBox(
         self.tab_parametros.tab(self.tab2),
-        text = "Panta Inactiva",
+        text = "Panta Inactiva", 
         **style.STYLELABEL,
         variable = self.planta_inactiva_var,
         onvalue= "1",
@@ -262,7 +262,7 @@ def plantas (self):
         checkbox_height = 20
     )
     self.chk_planta_produccion.place(
-        relx = 0.30,
+        relx = 0.3,
         rely = 0.38
     )
     #----------------------BOTONES----------------------------------------
