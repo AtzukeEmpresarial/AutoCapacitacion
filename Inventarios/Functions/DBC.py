@@ -122,6 +122,14 @@ def find_by(cnx_nac, columna: str, id: int, tabla: str):
     ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
     return(ids_df)
 
+def find_by_nombre(cnx_nac, columna: str, nombre: str, tabla: str):
+    '''Metodo que se encaga de consultar desde la base de datos según el CODINV
+    y retorna un DataFrame recibiendo:
+    DataFrame que contiene el registro correspondiente al nombre'''
+    sql = """SELECT * FROM CISLIBPR.{} WHERE {} = '{}'""".format(tabla, columna, nombre)
+    codinv_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    return(codinv_df)
+
 def find_by_id_traslados(self, cnx_nac, id: int):
     '''Metodo que se encaga de consultar desde la base de datos según el ID
     y retorna un DataFrame recibiendo:
@@ -175,6 +183,23 @@ def find_indexes_where_int(cnx_nac,index_name: str, tabla: str, index_condition:
     indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
     indexes = indexes_df.loc[:,index_name] # type: ignore
     return(indexes)
+
+def find_planta_x_provedor(self, cnx_nac, provedor: str):
+    '''consulta las plantas según su provedor.
+    return:
+    Serie de pandas que contiene todos registros según el indice 
+    indicado de la tabla.'''
+    sql = f"""SELECT * FROM CISLIBPR.PLANTAS WHERE OPERADOR = '{provedor}' AND PRODUCCION = 0"""
+    indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    indexes = indexes_df.loc[:,"UBICACION"] # type: ignore
+    return(indexes)
+
+def inventario_x_planta_provedor(self, cnx_nac, planta: str, provedor: str):
+    """COnsulta el ivnentario según la planta y el provedor, 
+    retorna un DF con estos datos"""
+    sql = f"SELECT * FROM CISLIBPR.INVENTARIOTJ WHERE PLANTA = '{planta}' AND PROVEDOR = '{provedor}'"
+    df = pd.read_sql(sql, con = cnx_nac)
+    return(df)
 
 def delete(self, cnx_nac,column: str, reg: int, tabla: str):
     '''Elimina el registro indicado.
@@ -544,8 +569,25 @@ def TRM (self):
     else:
         self.login_message = alert_message(self,self, "No se pudo obtener el TRM actual\npor favor verifique su conexión")
     
-    
+def verificar_inventario(self, cnx_nac, codinv: int, provedor: str, planta:str):
+    try: 
+        sql = f"""SELECT * FROM CISLIBPR.INVENTARIOTJ WHERE CODINV = {codinv} AND PROVEDOR = '{provedor}' AND PLANTA = '{planta}'"""
+        df_items = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        return(df_items) 
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar en items \npor favor verifique su conexión")  
 
+def items(self, cnx_nac):
+    """Consulta los pedidos items, recibe:
+    cnx_nac = cadena de conexión
+    retorna:
+    df_pendientes = dataframe que contiene todos los items (inventario)"""
+    try: 
+        sql = """SELECT * FROM CISLIBPR.INVENTARIOTJ"""
+        df_items = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        return(df_items) 
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar los pedidos pendientes \npor favor verifique su conexión")   
     
 
     

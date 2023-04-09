@@ -24,24 +24,39 @@ class menu_process(ctk.CTkFrame):
         self.configure(fg_color = style.GRAYBLACK)
         self.controller = controller
         self.count = 0
+        #conexión que usara esta pantalla
+        self.cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID={};PWD={}'.format(controller.user, controller.password), autocommit=True )
         #Lista que contiene los consecutivos
         self.ls_pedidos = []
         self.ls_pedidos_idemia = []
         self.ls_proveedores = []
         self.ls_plantas = []
         self.ls_plantas_produccion = []
+        #cargamos las listas
+        self.ls_plasticos = DBC.find_indexes(self.cnx_nac,"NOMBRE", "PLASTICOS").to_list()
+        self.ls_plasticos.sort()
+        #self.ls_plasticos = list(set(self.ls_plasticos))
+        self.ls_plantas = DBC.find_indexes_where_int(self.cnx_nac,"UBICACION","PLANTAS","PRODUCCION",0).to_list()
+        self.ls_plantas.sort()
+        self.ls_plantas = list(set(self.ls_plantas))
+        self.ls_plantas_produccion = DBC.find_indexes_where_int(self.cnx_nac,"UBICACION","PLANTAS","PRODUCCION", 1).to_list()
+        self.ls_plantas_produccion.sort()
+        self.ls_plantas_produccion = list(set(self.ls_plantas_produccion))
+        self.ls_proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
+        self.ls_proveedores.sort()
+        self.ls_proveedores = list(set(self.ls_proveedores))
         #variable de confirmaciín
         self.cfm = False
         #Variable que guarda el estado de la tabla de pendientes
         self.tabla = False
-        #conexión que usara esta pantalla
-        self.cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID={};PWD={}'.format(controller.user, controller.password), autocommit=True )
         self.init_tabview()
         self.entrada_semanal()
         self.descarga_diaria()
         self.inventario_0()
         self.traslados()
         self.pedidos()
+        self.inventarios()
+        self.anadir()
 
 #_______________________Tabview________________________________________________________
 
@@ -66,14 +81,16 @@ class menu_process(ctk.CTkFrame):
         self.tab3 = "Inventario 0"
         self.tab4 = "Traslados"
         self.tab5 = "Pedidos"
-        self.tab6 = "por definir"
+        self.tab6 = "Items de inventario"
+        self.tab7 = "Inventarios"
+        self.tab_alimentar.add(self.tab6)
         self.tab_alimentar.add(self.tab1)
         self.tab_alimentar.add(self.tab2)
         self.tab_alimentar.add(self.tab3)
         self.tab_alimentar.add(self.tab4)
         self.tab_alimentar.add(self.tab5)
-        self.tab_alimentar.add(self.tab6)
-        self.tab_alimentar.set(self.tab1)
+        self.tab_alimentar.add(self.tab7)
+        self.tab_alimentar.set(self.tab6)
 
 
 
@@ -542,15 +559,6 @@ class menu_process(ctk.CTkFrame):
 
 #________________________Traslados_________________________________________________________
     def traslados(self):
-
-        #Cargamos las plantas y proveedores
-        self.ls_plantas = DBC.find_indexes_where_int(self.cnx_nac,"UBICACION","PLANTAS","PRODUCCION",0).to_list()
-        self.ls_plantas.sort()
-        self.ls_plantas_produccion = DBC.find_indexes_where_int(self.cnx_nac,"UBICACION","PLANTAS","PRODUCCION", 1).to_list()
-        self.ls_plantas_produccion.sort()
-        self.ls_proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
-        self.ls_proveedores.sort()
-
         #Label y Combobox de la planta de salida
         self.lb_planta_salida = ctk.CTkLabel(
             self.tab_alimentar.tab(self.tab4),
@@ -1504,6 +1512,350 @@ class menu_process(ctk.CTkFrame):
             self.sheet_pedidos_pendientes.destroy()
             self.tabla = False
 
+
+
+
+
+#____________________________añadir item a inventario____________________________________
+    def anadir(self):
+        #Label y entry del ID del item
+        self.lb_id_item = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab6),
+            **style.STYLELABEL,
+            text= "ID Item",
+            fg_color="transparent"
+        )
+        self.lb_id_item.place(
+            relx = 0.055,
+            rely = 0
+        )
+        self.et_id_item = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab6),
+            placeholder_text = "ID"
+        )
+        self.et_id_item.place(
+            relx = 0.075,
+            rely = 0.08,
+            relwidth = 0.06
+        )  
+        #Label y Combobox del nombre plastico
+        self.lb_nombre_item = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab6),
+            **style.STYLELABEL,
+            text= "Nombre plastico",
+            fg_color="transparent"
+        )
+        self.lb_nombre_item.place(
+            relx = 0.21,
+            rely = 0
+        )
+        self.nombre_item_var = ctk.StringVar()
+        self.cb_nombre_item = ctk.CTkComboBox(
+            self.tab_alimentar.tab(self.tab6),
+            values = self.ls_plasticos,
+            variable = self.nombre_item_var
+        )
+        self.cb_nombre_item.place(
+            relx = 0.155,
+            rely = 0.08,
+            relwidth = 0.30
+        )
+        #Label y entry del CODINV del item
+        self.lb_codinv_item = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab6),
+            **style.STYLELABEL,
+            text= "CODINV",
+            fg_color="transparent"
+        )
+        self.lb_codinv_item.place(
+            relx = 0.48,
+            rely = 0
+        )
+        self.et_codinv_item = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab6),
+            placeholder_text = "CODINV"
+        )
+        self.et_codinv_item.place(
+            relx = 0.48,
+            rely = 0.08,
+            relwidth = 0.1
+        )
+        #Label y Combobox de los provedores
+        self.lb_provedor_item = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab6),
+            **style.STYLELABEL,
+            text= "Provedor",
+            fg_color="transparent"
+        )
+        self.lb_provedor_item.place(
+            relx = 0.7,
+            rely = 0
+        )
+        self.provedor_item_var = ctk.StringVar()
+        self.cb_provedor_item = ctk.CTkComboBox(
+            self.tab_alimentar.tab(self.tab6),
+            values = self.ls_proveedores,
+            variable = self.provedor_item_var
+        )
+        self.cb_provedor_item.place(
+            relx = 0.6,
+            rely = 0.08,
+            relwidth = 0.30
+        )
+        #Label y Combobox la planta
+        self.lb_planta_item = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab6),
+            **style.STYLELABEL,
+            text= "Planta",
+            fg_color="transparent"
+        )
+        self.lb_planta_item.place(
+            relx = 0.14,
+            rely = 0.18
+        )
+        self.planta_item_var = ctk.StringVar()
+        self.cb_planta_item = ctk.CTkComboBox(
+            self.tab_alimentar.tab(self.tab6),
+            values = self.ls_plantas,
+            variable = self.planta_item_var
+        )
+        self.cb_planta_item.place(
+            relx = 0.08,
+            rely = 0.26,
+            relwidth = 0.20
+        )
+        #Label y entry de Cantidad del item
+        self.lb_cantidad_item = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab6),
+            **style.STYLELABEL,
+            text= "Cantidad",
+            fg_color="transparent"
+        )
+        self.lb_cantidad_item.place(
+            relx = 0.35,
+            rely = 0.18
+        )
+        self.et_cantidad_item = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab6),
+            placeholder_text = "Cantidad"
+        )
+        self.et_cantidad_item.place(
+            relx = 0.30,
+            rely = 0.26,
+            relwidth = 0.20
+        )
+        #Botón que busca según el ID del item
+        self.bt_search_item = ctk.CTkButton(
+            self.tab_alimentar.tab(self.tab6),
+            **style.SMALLBUTTONSTYLE,
+            text = "Buscar",
+            command = self.search_by_id_item ,
+            width= 90
+        )
+        self.bt_search_item.place(
+            relx = 0.055,
+            rely = 0.36
+        )
+        #Botón que guarda el item
+        self.bt_save_item = ctk.CTkButton(
+            self.tab_alimentar.tab(self.tab6),
+            **style.SMALLBUTTONSTYLE,
+            text = "Guardar",
+            command = self.insert_item ,
+            width= 90
+        )
+        self.bt_save_item.place(
+            relx = 0.20,
+            rely = 0.36
+        )
+        #Botón de limpiar
+        self.bt_clean_item = ctk.CTkButton(
+            self.tab_alimentar.tab(self.tab6),
+            **style.SMALLBUTTONSTYLE,
+            text = "Limpiar",
+            command = self.clean_item,
+            width= 90
+        )
+        self.bt_clean_item.place(
+            relx = 0.345,
+            rely = 0.36
+        )
+        #Botón que eliminar el item
+        self.bt_delete_item = ctk.CTkButton(
+            self.tab_alimentar.tab(self.tab6),
+            **style.SMALLBUTTONSTYLE,
+            text = "Eliminar",
+            command = self.eliminar_item,
+            width= 90
+        )
+        self.bt_delete_item.place(
+            relx = 0.495,
+            rely = 0.36
+        )
+        #Botón que muestra todos los items
+        self.bt_all_item = ctk.CTkButton(
+            self.tab_alimentar.tab(self.tab6),
+            **style.SMALLBUTTONSTYLE,
+            text = "ITEMS",
+            command = self.items_completos,
+            width= 90
+        )
+        self.bt_all_item.place(
+            relx = 0.645,
+            rely = 0.36
+        )
+
+    def search_by_id_item(self):
+        ''' Función que carga los datos de un item según el ID'''
+        try:
+            item_df = DBC.find_by(self.cnx_nac, "ID", int(self.et_id_item.get()), "INVENTARIOTJ")
+            self.load_in_widgets_items(item_df)# type: ignore
+        except pyodbc.InterfaceError:
+            self.login_message = alert_message(self,self, "No se pudo conectar a Nacional\npor favor verifique su conexión y el ID solicitado")
+    
+    def load_in_widgets_items(self, df: pd.DataFrame):
+        '''Carga la información contenida en un dataframe en los widgets de items,
+        recibe:
+        self = Frame padre
+        df = Dataframe con los datos del pedido'''
+        self.et_id_item.delete(0, ctk.END)
+        self.nombre_item_var.set("")
+        self.et_codinv_item.delete(0, ctk.END)
+        self.provedor_item_var.set("")
+        self.planta_item_var.set("")
+        self.et_cantidad_item.delete(0, ctk.END)
+
+        self.et_id_item.insert(0, str(df.loc[0,"ID"]))
+        self.nombre_item_var.set(str(df.loc[0,"NOMBRE"]))
+        self.et_codinv_item.insert(0, str(df.loc[0,"CODINV"]))
+        self.provedor_item_var.set(str(df.loc[0,"PROVEDOR"]))
+        self.planta_item_var.set(str(df.loc[0,"PLANTA"]))
+        self.et_cantidad_item.insert(0, str(df.loc[0,"CANTIDAD"]))
+    
+    def insert_item(self):
+        ''' Función que se encarga de guardar los datos ingresados en los campos de
+        creación de items; guarda en un diccionario los datos en los entry
+        para convertirlo en un DataFrame y posteriormente enviarlo a la función
+        de la ODBC que guarda los items.'''
+
+        self.confirm_action("¿Seguro que desea crear este registro?")
+
+        df_items = DBC.verificar_inventario(self, self.cnx_nac, int(self.et_codinv_item.get()), self.cb_provedor_item.get(), self.cb_planta_item.get())
+        if df_items.empty:# type: ignore
+            if self.cfm:
+                item_dic = {
+                    'NOMBRE' : [self.cb_nombre_item.get()],
+                    'CODINV' : [int(self.et_codinv_item.get())],
+                    'PROVEDOR' : [self.cb_provedor_item.get()],
+                    'PLANTA' : [self.cb_planta_item.get()],
+                    'CANTIDAD' : [int(self.et_cantidad_item.get())]
+                }
+                item_df = pd.DataFrame(item_dic)
+                DBC.insert(self, self.cnx_nac,item_df,"INVENTARIOTJ")
+                self.clean_item()
+                self.cfm = False
+                self.login_message = alert_message(self,self, "Se registro el item con eso.")
+        else:
+            self.login_message = alert_message(self,self, "¡Ese item ya existe!\n Por favor verifique los datos ingresados")
+
+
+    def clean_item(self):
+        '''Limpia la información de los widgets de items'''
+        self.et_id_item.delete(0, ctk.END)
+        self.nombre_item_var.set("")
+        self.et_codinv_item.delete(0, ctk.END)
+        self.provedor_item_var.set("")
+        self.planta_item_var.set("")
+        self.et_cantidad_item.delete(0, ctk.END)
+    
+    def eliminar_item(self):
+        '''Función que se encarga de eliminar un item según su ID'''
+        self.confirm_action("¿Está seguro que desea Eliminar este Item de Forma permanente?\nRecuerde que esto representa las existencias de un plastico")
+
+        if self.cfm:
+            DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_item.get()), "INVENTARIOTJ")
+            self.clean_item()
+
+    def items_completos(self):
+        """Genera una hoja de calculo sobre los demás widgets que nos muestras
+        todos los items"""
+        if not self.tabla:
+            self.df_items = DBC.items(self, self.cnx_nac)
+            #Tabla en la cual se colocan los datos
+            self.sheet_items = Sheet(
+                self.tab_alimentar.tab(self.tab6),
+                data = self.df_items.values.tolist(),# type: ignore
+                headers= self.df_items.columns.tolist(),# type: ignore
+                show_x_scrollbar= True,
+                font = style.FONT_NORMAL, 
+                header_font = style.FONT_NORMAL
+            )
+            self.sheet_items.place(
+                relx = 0,
+                rely = 0,
+                relwidth = 1,
+                relheight = 0.35
+            )
+            self.tabla = True
+        else:
+            self.sheet_items.destroy()
+            self.tabla = False
+
+        
+
+
+
+#_____________________________Inventarios______________________________________________________
+    def inventarios(self):
+        #Se crea un tabView para los diferentes provedores y inventarios
+        self.tab_inventarios = ctk.CTkTabview(
+            self.tab_alimentar.tab(self.tab7),
+            segmented_button_selected_hover_color = style.BLUE,
+            segmented_button_selected_color= style.DARKBLUE
+        )
+        self.tab_inventarios.pack(
+            anchor = ctk.N, 
+            fill = ctk.BOTH,
+            expand = True
+        )
+        for i in self.ls_proveedores:
+            tab = i
+            self.tab_inventarios.add(tab)
+            #Se crea un tabView para las diferentes plantas de su provedor
+            self.ls_plantasx = DBC.find_planta_x_provedor(self, self.cnx_nac,i).to_list()
+            self.ls_plantasx.sort()
+            self.ls_plantasx = list(set(self.ls_plantasx))
+            self.tab_inventarios_planta = ctk.CTkTabview(
+                self.tab_inventarios.tab(tab),
+                segmented_button_selected_hover_color = style.BLUE,
+                segmented_button_selected_color= style.DARKBLUE
+            )
+            self.tab_inventarios_planta.pack(
+                anchor = ctk.N, 
+                fill = ctk.BOTH,
+                expand = True
+            )
+            for j in self.ls_plantasx:
+                self.tab = j
+                self.tab_inventarios_planta.add(self.tab)   
+                #Hacemos un sheet que cargará el inventario de cada planta
+                self.df_inventario_j = DBC.inventario_x_planta_provedor(self, self.cnx_nac, j, i)
+                #Tabla en la cual se colocan los datos
+                self.sheet_ = Sheet(
+                    self.tab_inventarios_planta.tab(j),
+                    data = self.df_inventario_j.values.tolist(),# type: ignore
+                    headers= self.df_inventario_j.columns.tolist(),# type: ignore
+                    show_x_scrollbar= True,
+                    font = style.FONT_NORMAL, 
+                    header_font = style.FONT_NORMAL
+                )
+                self.sheet_.place(
+                    relx = 0,
+                    rely = 0,
+                    relwidth = 1,
+                    relheight = 1
+                )
+            
         
             
 

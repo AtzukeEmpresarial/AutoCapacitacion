@@ -287,7 +287,7 @@ def plastico (self):
     #Carga inicial de plantas
     self.plantas_thales = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "THALES" ).to_list()
     self.plantas_thales.sort()
-    self.plantas_idemia = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "IDOPERADOR", "IDEMIA" ).to_list()
+    self.plantas_idemia = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "IDEMIA" ).to_list()
     self.plantas_thales.sort()
     #Label y entry (no activo) de la ID del plastico
     self.lb_id = ctk.CTkLabel(
