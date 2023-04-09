@@ -1,5 +1,6 @@
 import pyodbc
 import pandas as pd
+import requests
 from Screens.message.message import alert_message
 import re
 
@@ -121,6 +122,20 @@ def find_by(cnx_nac, columna: str, id: int, tabla: str):
     ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
     return(ids_df)
 
+def find_by_id_traslados(self, cnx_nac, id: int):
+    '''Metodo que se encaga de consultar desde la base de datos según el ID
+    y retorna un DataFrame recibiendo:
+    id = int con el id del registro que se busca
+    return:
+    DataFrame que contiene el registro correspondiente al ID'''
+    try:
+        sql = '''SELECT * FROM CISLIBPR.MOVIMIENTOS WHERE ID = {} AND IDTIPOMOV = 2'''.format(id)
+        ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        return(ids_df)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No existe el registro asociado a esa ID\npor favor verifique su conexión y el ID solicitado")
+    
+
 def find_indexes(cnx_nac,index_name: str, tabla: str):
     '''Consulta los registros existentes en la tabla dada 
     según el indice indicado recibiendo:
@@ -147,6 +162,20 @@ def find_indexes_where(cnx_nac,index_name: str, tabla: str, index_condition: str
     indexes = indexes_df.loc[:,index_name] # type: ignore
     return(indexes)
 
+def find_indexes_where_int(cnx_nac,index_name: str, tabla: str, index_condition: str, equal: int):
+    '''Consulta los registros existentes en la tabla dada 
+    según el indice indicado y las condiciones recibidas, recibiendo:
+    tabla = string con el nombre de la tabla a consultar
+    index_condition = columna a la que se le aplicara la condición
+    equal = a lo que debe ser igual la condición
+    return:
+    Serie de pandas que contiene todos registros según el indice 
+    indicado de la tabla.'''
+    sql = """SELECT * FROM CISLIBPR.{} WHERE {} = {}""".format(tabla, index_condition, equal)
+    indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    indexes = indexes_df.loc[:,index_name] # type: ignore
+    return(indexes)
+
 def delete(self, cnx_nac,column: str, reg: int, tabla: str):
     '''Elimina el registro indicado.
     column = la en la que se buscara el registro
@@ -161,6 +190,26 @@ def delete(self, cnx_nac,column: str, reg: int, tabla: str):
         self.login_message = alert_message(self,self, "¡El registro se eliminó correctamente!")
     except pyodbc.InterfaceError:
         self.login_message = alert_message(self,self, "El registro no se pudo eliminar\npor favor verifique su conexión y los datos ingresados")
+
+def consultar_cantidad(self, cnx_nac, codinv: int, planta: str, proveedor: str):
+    """Consulta la cantidad de plasticos disponibles en una planta de un proveedor 
+    en especifico. Recibe:
+    cnx_nac = cadena de conexión global
+    codinv = codigo de inventario del plastico
+    planta = planta de la que se desea hacer el traslado
+    proveedor = proveedor del cual se va a hacer el traslado
+    devuelve:
+    candtidad = dato de tipo int que contiene la cantidad actual de plasticos referenciados"""
+    try:
+        cantidad = 0
+        sql = "SELECT CANTIDAD FROM CISLIBPR.INVENTARIOTJ WHERE CODINV = {} AND PLANTA = '{}' AND PROVEDOR = '{}'".format(codinv, planta, proveedor)
+        df_cantidad = pd.read_sql(sql, con = cnx_nac)
+        for index, row in df_cantidad.iterrows():
+            cantidad = row["CANTIDAD"]
+            return(cantidad)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo verificar la cantidad actual de plasticos \npor favor verifique su conexión")
+    
 
 def consultar_ultimo_pedido_thales_idemia(self, cnx_nac):
     """Consulta la tabla de ultimo pedido y actualiza la lista
@@ -183,16 +232,103 @@ def actualizar_ultimo_pedido_thales_idemia(self, cnx_nac, ultimo_thales_actual: 
     cnx_nac = cadena de conexión global,
     ultimo_thales_actual = ultimo codigo de thales actual, despues de subir los datos,
     ultimo_idemia_actual = ultimo codigo de thales actual, despues de subir los datos"""
-    cursor = cnx_nac.cursor()
-    self.ls_pedidos[:] = []
-    sql1 = """DELETE FROM CISLIBPR.CODIGOPED"""
-    sql2 = '''INSERT INTO CISLIBPR.CODIGOPED (ULTIMOTHALES, ULTIMOIDEMIA) VALUES ({},{})'''.format(ultimo_thales_actual, ultimo_idemia_actual)
-    cursor.execute(sql1)
-    cursor.execute(sql2)
-    cursor.commit()
-    cursor.close()
+    try:
+        cursor = cnx_nac.cursor()
+        self.ls_pedidos[:] = []
+        sql1 = """DELETE FROM CISLIBPR.CODIGOPED"""
+        sql2 = '''INSERT INTO CISLIBPR.CODIGOPED (ULTIMOTHALES, ULTIMOIDEMIA) VALUES ({},{})'''.format(ultimo_thales_actual, ultimo_idemia_actual)
+        cursor.execute(sql1)
+        cursor.execute(sql2)
+        cursor.commit()
+        cursor.close()
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo verificar el ultimo consecutivo \npor favor verifique su conexión")
+
+def traslado_salida(self, cnx_nac, codinv: int, planta: str, proveedor: str, cantidad: int):
+    """Actualiza el inventario con la salida de los plasticos solicitados en el traslado"""
+    try:
+        cursor = cnx_nac.cursor()
+        sql = "UPDATE CISLIBPR.INVENTARIOTJ SET CANTIDAD = CANTIDAD - {} WHERE CODINV = {} AND PLANTA = '{}' AND PROVEDOR = '{}'".format(cantidad, codinv, planta, proveedor)
+        cursor.execute(sql)
+        cursor.commit()
+        cursor.close()
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo actualizar el inventario \npor favor verifique su conexión")
+
+def deshacer_traslado_salida(self, cnx_nac, codinv: int, planta: str, proveedor: str, cantidad: int):
+    """deshace un traslado, tambien utilizado para completar un traslado al sumar la
+    cantidad especidifcada en el traslado a la planta final"""
+    try:
+        cursor = cnx_nac.cursor()
+        sql = "UPDATE CISLIBPR.INVENTARIOTJ SET CANTIDAD = CANTIDAD + {} WHERE CODINV = {} AND PLANTA = '{}' AND PROVEDOR = '{}'".format(cantidad, codinv, planta, proveedor)
+        cursor.execute(sql)
+        cursor.commit()
+        cursor.close()
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo deshacer el traslado \npor favor verifique su conexión y el ID de traslado ingresado") 
+
+def pedidos_parciales(self, cnx_nac, id_pedido: int, cantidad: int, codinv: int, planta: str, proveedor: str):
+    """Actualiza la cantidad de plasticos entregados del pedido, y alimenta el inventario"""
+    try:
+        cursor = cnx_nac.cursor()
+        sql = f"UPDATE CISLIBPR.PEDIDOSTJ SET CANTIDADDESP = CANTIDADDESP + {cantidad} WHERE ID = {id_pedido}"
+        sql2 = f"UPDATE CISLIBPR.INVENTARIOTJ SET CANTIDAD = CANTIDAD + {cantidad} WHERE CODINV = {codinv} AND PLANTA = '{planta}' AND PROVEDOR = '{proveedor}'"
+        cursor.execute(sql)
+        cursor.execute(sql2)
+        cursor.commit()
+        cursor.close()
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo agregar el despacho parcial del pedido \npor favor verifique su conexión y el ID de traslado ingresado")  
+
+def completar_pedido(self, cnx_nac, id_pedido: int):
+    """Marca un pedido como completo"""
+    try:
+        cursor = cnx_nac.cursor()
+        sql = f"UPDATE CISLIBPR.PEDIDOSTJ SET ESTADO = 'Cerrado' WHERE ID = {id_pedido}"
+        cursor.execute(sql)
+        cursor.commit()
+        cursor.close()
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo marcar el pedido como completo \npor favor verifique su conexión y el ID de traslado ingresado")  
 
 
+def marcar_traslado_completo(self, cnx_nac, id: int, fecha_final:str):
+    """Marca el traslado identificado con la ID ingresada como completo"""
+    try: 
+        cursor = cnx_nac.cursor()
+        sql = "UPDATE CISLIBPR.MOVIMIENTOS SET COMPLETO = 1, FECHALLEGADA = {} WHERE ID = {} ".format(fecha_final, id)
+        cursor.execute(sql)
+        cursor.commit()
+        cursor.close()   
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo marcar el traslado como completo \npor favor verifique su conexión y el ID de traslado ingresado")   
+
+def Traslados_pendientes(self, cnx_nac):
+    """Consulta los traslados pendientes, recibe:
+    cnx_nac = cadena de conexión
+    retorna:
+    df_pendientes = dataframe que contiene los traslados pendientes (no marcados como
+    completos)"""
+    try: 
+        sql = """SELECT * FROM CISLIBPR.MOVIMIENTOS WHERE IDTIPOMOV = 2 AND COMPLETO = 0"""
+        df_pendientes = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        return(df_pendientes) 
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar los traslados pendientes \npor favor verifique su conexión") 
+
+def pedidos_pendientes(self, cnx_nac):
+    """Consulta los pedidos pendientes, recibe:
+    cnx_nac = cadena de conexión
+    retorna:
+    df_pendientes = dataframe que contiene los traslados pendientes (no marcados como
+    completos)"""
+    try: 
+        sql = """SELECT * FROM CISLIBPR.PEDIDOSTJ WHERE ESTADO = 'Abierto'"""
+        df_pendientes = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        return(df_pendientes) 
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar los pedidos pendientes \npor favor verifique su conexión")  
+    
 
 def alimentar_inventario(self, cnx_nac, df_thales: pd.DataFrame, df_idemia: pd.DataFrame, fecha: str):
     """COnsulta que se encarga de agregar a la tabla de movimeintos todos los realces
@@ -211,12 +347,12 @@ def alimentar_inventario(self, cnx_nac, df_thales: pd.DataFrame, df_idemia: pd.D
         with pd.ExcelWriter('Copias De Inventario.xlsx') as writer: 
             df_inventario.to_excel(writer, sheet_name=fecha, index= False)
         for index, row in df_thales.iterrows():
-            sql ="INSERT INTO CISLIBPR.MOVIMIENTOS (CODINV, PROVEEDOR, PLANTA,PLANTAFINAL, IDTIPOMOV, FECHA, CANTIDAD, FECHALLEGADA) VALUES  ({},'{}','{}','{}',{},'{}',{}, '{}')".format(int(row["CODINV"]), "THALES",row["PLANTA"],"", 1, fecha, int(row["REALZADO"]), "")
+            sql ="INSERT INTO CISLIBPR.MOVIMIENTOS (CODINV, PROVEEDOR, PLANTA,PLANTAFINAL, IDTIPOMOV, FECHA, FECHALLEGADA, CANTIDAD, COMPLETO) VALUES  ({},'{}','{}','{}',{},'{}','{}', {}, {})".format(int(row["CODINV"]), "THALES",row["PLANTA"],"", 1, fecha, "", int(row["REALZADO"]), 1)
             cursor.execute(sql)
             sql = "UPDATE cislibpr.INVENTARIOTJ SET CANTIDAD = CANTIDAD - {} WHERE CODINV = {} AND PROVEDOR = '{}' AND PLANTA = '{}'".format(int(row["REALZADO"]),int(row["CODINV"]), "THALES", row["PLANTA"] )
             cursor.execute(sql)
         for index, row in df_idemia.iterrows():
-            sql ="INSERT INTO CISLIBPR.MOVIMIENTOS (CODINV, PROVEEDOR, PLANTA,PLANTAFINAL, IDTIPOMOV, FECHA, CANTIDAD, FECHALLEGADA) VALUES  ({},'{}','{}','{}',{},'{}',{}, '{}')".format(int(row["CODINV"]), "IDEMIA" ,row["PLANTA"],"", 1, fecha, int(row["REALZADO"]), "")
+            sql ="INSERT INTO CISLIBPR.MOVIMIENTOS (CODINV, PROVEEDOR, PLANTA,PLANTAFINAL, IDTIPOMOV, FECHA, FECHALLEGADA, CANTIDAD, COMPLETO) VALUES  ({},'{}','{}','{}',{},'{}','{}', {}, {})".format(int(row["CODINV"]), "IDEMIA" ,row["PLANTA"],"", 1, fecha, "", int(row["REALZADO"]), 1)
             cursor.execute(sql)
             sql = "UPDATE cislibpr.INVENTARIOTJ SET CANTIDAD = CANTIDAD - {} WHERE CODINV = {} AND PROVEDOR = '{}' AND PLANTA = '{}'".format(int(row["REALZADO"]),int(row["CODINV"]), "IDEMIA", row["PLANTA"] )
             cursor.execute(sql)
@@ -396,6 +532,17 @@ def daily(self, cnx_nac, fecha: str, pedido_thales: int, ls_pedidos_idemia):
         return(alerta)
     except pyodbc.InterfaceError:
         self.login_message = alert_message(self,self, "Los datos no se pudieron descargar\npor favor verifique su conexión, fecha y consecutivos ingresados")
+
+def TRM (self):
+    url = "https://www.datos.gov.co/resource/32sa-8pi3.json?$order=vigenciadesde%20DESC&$limit=1"
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        trm = response.json()[0]["valor"]
+        return(trm)
+    else:
+        self.login_message = alert_message(self,self, "No se pudo obtener el TRM actual\npor favor verifique su conexión")
     
     
 

@@ -60,7 +60,7 @@ def insert_proveedor(self):
     de la ODBC que guarda un proveedor.'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
-    self.confirm_action("¿Seguro que desea crearlo?")
+    
     if self.cfm:
         proveedores_dic = {
             'NOMBRE' : [self.et_nombre_proveedor.get()],
@@ -83,7 +83,7 @@ def update_proveedor(self):
     de la ODBC que guarda un proveedor.'''
 
     self.confirm_action("¿Seguro que desea actualizar este registro?")
-    self.confirm_action("¿Seguro que desea actualizarlo?")
+    
 
     if self.cfm:
         ids = DBC.find_indexes(self.cnx_nac, "ID", "PROVEEDORES").to_list()
@@ -112,7 +112,7 @@ def clean_proveedor (self):
 def delete_by_id_proveedor(self):
     '''Función que se encarga de eliminar un proveedor según su ID'''
     self.confirm_action("¿Está seguro que desea Eliminar este registro de Forma permanente?")
-    self.confirm_action("¿Seguro que desea eliminarlo?")
+    
 
     if self.cfm:
         DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_proveedor.get()), "PROVEEDORES")

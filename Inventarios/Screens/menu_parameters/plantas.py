@@ -35,8 +35,8 @@ def previous_planta (self):
 
 def search_by_id_planta(self):
     ''' Función que carga los datos de una planta según el ID'''
-    plasticos_df = DBC.find_by(self.cnx_nac, "ID", int(self.et_id_planta.get()), "PLANTAS")
-    load_in_widgets_planta(self,plasticos_df)
+    plantas_df = DBC.find_by(self.cnx_nac, "ID", int(self.et_id_planta.get()), "PLANTAS")
+    load_in_widgets_planta(self,plantas_df)
 
 def insert_planta(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
@@ -45,7 +45,6 @@ def insert_planta(self):
     de la ODBC que guarda las plantas.'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
-    self.confirm_action("¿Seguro que desea crearlo?")
 
     if self.cfm:
         plantas_dic = {
@@ -93,7 +92,7 @@ def load_in_widgets_planta(self, df: pd.DataFrame):
 def delete_by_id_planta(self):
     '''Función que se encarga de eliminar una planta según su ID'''
     self.confirm_action("¿Está seguro que desea Eliminar este registro de Forma permanente?")
-    self.confirm_action("¿Seguro que desea eliminarlo?")
+    
 
     if self.cfm:
         DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_planta.get()), "PLANTAS")
@@ -109,7 +108,7 @@ def update_planta(self):
     de la ODBC que guarda los plantas.'''
 
     self.confirm_action("¿Seguro que desea actualizar este registro?")
-    self.confirm_action("¿Seguro que desea actualizarlo?")
+    
 
     if self.cfm:
         ids = DBC.find_indexes(self.cnx_nac, "ID", "PLANTAS").to_list()

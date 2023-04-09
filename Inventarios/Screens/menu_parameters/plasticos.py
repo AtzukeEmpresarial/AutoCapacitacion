@@ -9,7 +9,7 @@ def delete_by_codinv(self):
     '''Función que se encarga de eliminar un plastico según su CODINV'''
 
     self.confirm_action("¿Está seguro que desea Eliminar este registro de Forma permanente?")
-    self.confirm_action("¿Seguro que desea eliminarlo?")
+    
 
     if self.cfm:
         DBC.delete(self, self.cnx_nac,"CODINV", int(self.et_codigo_inventario.get()), "PLASTICOS")
@@ -193,7 +193,7 @@ def insert(self):
     SE REVISA QUE EL CODIGO DE INVENTARIO NO EXISTA'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
-    self.confirm_action("¿Seguro que desea crearlo?")
+    
 
     if self.cfm:
         codinvs = DBC.find_indexes(self.cnx_nac, "CODINV", "PLASTICOS").to_list()
@@ -243,7 +243,7 @@ def update(self):
     SE REVISA QUE EL CODIGO DE INVENTARIO NO EXISTA'''
 
     self.confirm_action("¿Seguro que desea actualizar este registro?")
-    self.confirm_action("¿Seguro que desea actualizarlo?")
+    
 
     if self.cfm:
         codinvs = DBC.find_indexes(self.cnx_nac, "CODINV", "PLASTICOS").to_list()
@@ -287,7 +287,7 @@ def plastico (self):
     #Carga inicial de plantas
     self.plantas_thales = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "THALES" ).to_list()
     self.plantas_thales.sort()
-    self.plantas_idemia = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "IDEMIA" ).to_list()
+    self.plantas_idemia = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "IDOPERADOR", "IDEMIA" ).to_list()
     self.plantas_thales.sort()
     #Label y entry (no activo) de la ID del plastico
     self.lb_id = ctk.CTkLabel(
