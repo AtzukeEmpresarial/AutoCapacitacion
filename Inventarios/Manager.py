@@ -61,6 +61,7 @@ class Manager(ctk.CTk):
         frame.bt_procesar.configure(state = "normal")
         frame.bt_procesar.configure(**style.BUTTONSTYLE)
         frame.bt_params.configure(state = "normal")
+        frame.bt_informes.configure(state = "normal")
         frame.bt_login.configure(state = "disabled")
         frame.bt_login.configure(**style.BUTTONSTYLE)
         frame.init_user()

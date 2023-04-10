@@ -45,21 +45,24 @@ def insert_planta(self):
     de la ODBC que guarda las plantas.'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
-
-    if self.cfm:
-        plantas_dic = {
-            'UBICACION' : [self.cb_ubicacion_planta.get()],
-            'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
-            'OPERADOR' : [self.cb_proveedor_planta.get()],
-            'LT' : [int(self.et_lt_planta.get())],
-            'ACTIVA' : [int(self.chk_planta_inactiva.get())],
-            'PRODUCCION' : [int(self.chk_planta_produccion.get())]
-        }
-        plantas_df = pd.DataFrame(plantas_dic)
-        DBC.insert(self, self.cnx_nac,plantas_df,"PLANTAS")
-        self.ids_plantas = DBC.find_indexes(self.cnx_nac, "ID","PLANTAS").to_list()
-        self.ids_plantas.sort()
-        self.cfm = False
+    df_planta = DBC.verificar_planta(self, self.cnx_nac, self.cb_ubicacion_planta.get(),self.cb_proveedor_planta.get(),int(self.chk_planta_produccion.get()))
+    if df_planta.empty:# type: ignore
+        if self.cfm:
+            plantas_dic = {
+                'UBICACION' : [self.cb_ubicacion_planta.get()],
+                'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
+                'OPERADOR' : [self.cb_proveedor_planta.get()],
+                'LT' : [int(self.et_lt_planta.get())],
+                'ACTIVA' : [int(self.chk_planta_inactiva.get())],
+                'PRODUCCION' : [int(self.chk_planta_produccion.get())]
+            }
+            plantas_df = pd.DataFrame(plantas_dic)
+            DBC.insert(self, self.cnx_nac,plantas_df,"PLANTAS")
+            self.ids_plantas = DBC.find_indexes(self.cnx_nac, "ID","PLANTAS").to_list()
+            self.ids_plantas.sort()
+            self.cfm = False
+    else:
+        self.login_message = alert_message(self,self, "¡Esa planta ya existe!\n Por favor verifique los datos ingresados")
 
 def clean_planta (self):
     '''Limpia la información de los widgets de plasticos'''
@@ -130,6 +133,8 @@ def update_planta(self):
             self.cfm = False
 
 def plantas (self):
+    ls_ciudades = ["BOGOTA", "MEDELLIN", "CALI", "BARRANQUILLA", "CARTAGENA", "CUCUTA", "BUCARAMANGA", "IBAGUE", "SOLEDAD", "PASTO", "VILLAVICENCIO", "VALLEDUPAR", "MONTERIA", "MANIZALES", "ARMENIA", "SOACHA", "PEREIRA", "BUENAVENTURA", "POPAYAN", "NEIVA", "FLORENCIA", "IZTAPALAPA"]
+    ls_ciudades.sort()
     #Label y entry del ID de la planta
     self.lb_id_planta = ctk.CTkLabel(
         self.tab_parametros.tab(self.tab2),
@@ -166,7 +171,7 @@ def plantas (self):
     self.ubicacion_planta_var = ctk.StringVar()
     self.cb_ubicacion_planta = ctk.CTkComboBox(
         self.tab_parametros.tab(self.tab2),
-        values = ["Cali", "Medellín", "Bogóta", "Bucaramanga", "Pereira", "Barranquilla"],
+        values = ls_ciudades,
         variable = self.ubicacion_planta_var
     )
     self.cb_ubicacion_planta.place(
@@ -210,7 +215,7 @@ def plantas (self):
     self.proveedor_planta_var = ctk.StringVar()
     self.cb_proveedor_planta = ctk.CTkComboBox(
         self.tab_parametros.tab(self.tab2),
-        values = self.proveedores,
+        values = self.ls_proveedores,
         variable = self.proveedor_planta_var
     )
     self.cb_proveedor_planta.place(

@@ -55,26 +55,33 @@ def load_in_widgets_proveedor(self, df: pd.DataFrame):
 
 def insert_proveedor(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
-    creación de plantas; guarda en un diccionario los datos en los entry
+    creación de provedores; guarda en un diccionario los datos en los entry
     para convertirlo en un DataFrame y posteriormente enviarlo a la función
     de la ODBC que guarda un proveedor.'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
     
-    if self.cfm:
-        proveedores_dic = {
-            'NOMBRE' : [self.et_nombre_proveedor.get()],
-            'ACTIVO' : [int(self.chk_proveedor_inactivo.get())],
-            'TARIFA' : [float(self.et_tarifa_proveedor.get())],
-            'DESCRIPCION' : [self.tb_descripcion_proveedor.get("1.0","end-1c")] 
-        }
-        proveedores_df = pd.DataFrame(proveedores_dic)
-        DBC.insert(self, self.cnx_nac,proveedores_df,"PROVEEDORES")
-        self.ids_proveedores = DBC.find_indexes(self.cnx_nac, "ID","PROVEEDORES").to_list()
-        self.ids_proveedores.sort()
-        self.proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
-        self.proveedores.sort()
-        self.cfm = False
+    df_verificacion = DBC.verificar_provedor(self, self.cnx_nac, self.et_nombre_proveedor.get())
+
+    if df_verificacion.empty: # type: ignore
+        if self.cfm:
+            proveedores_dic = {
+                'NOMBRE' : [self.et_nombre_proveedor.get()],
+                'ACTIVO' : [int(self.chk_proveedor_inactivo.get())],
+                'TARIFA' : [float(self.et_tarifa_proveedor.get())],
+                'DESCRIPCION' : [self.tb_descripcion_proveedor.get("1.0","end-1c")] 
+            }
+            proveedores_df = pd.DataFrame(proveedores_dic)
+            DBC.insert(self, self.cnx_nac,proveedores_df,"PROVEEDORES")
+            self.ids_proveedores = DBC.find_indexes(self.cnx_nac, "ID","PROVEEDORES").to_list()
+            self.ids_proveedores.sort()
+            self.ls_proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
+            self.ls_proveedores.sort()
+            self.cb_proveedor_planta.configure( values= self.ls_proveedores)
+            self.cb_proveedor_planta.update()
+            self.cfm = False
+    else:
+        self.login_message = alert_message(self,self, "¡Ese provedor ya existe!\n Por favor verifique los datos ingresados")
 
 def update_proveedor(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
@@ -119,14 +126,16 @@ def delete_by_id_proveedor(self):
         self.et_id_proveedor.delete(0,ctk.END)
         self.ids_proveedores = DBC.find_indexes(self.cnx_nac, "ID","PROVEEDORES").to_list()
         self.ids_proveedores.sort()
-        self.proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
-        self.proveedores.sort()
+        self.ls_proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
+        self.ls_proveedores.sort()
+        self.cb_proveedor_planta.configure( values= self.ls_proveedores)
+        self.cb_proveedor_planta.update()
         clean_proveedor(self)
 
 def proveedores (self):
     #Carga inicial de proveedores
-    self.proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
-    self.proveedores.sort()
+    self.ls_proveedores = DBC.find_indexes(self.cnx_nac,"NOMBRE","PROVEEDORES").to_list()
+    self.ls_proveedores.sort()
     #Label y entry del ID del proveedor
     self.lb_id_proveedor = ctk.CTkLabel(
         self.tab_parametros.tab(self.tab3),

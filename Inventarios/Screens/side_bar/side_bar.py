@@ -8,6 +8,7 @@ from Screens.menu_login.menu_login import menu_login
 from Screens.menu_process.menu_process import menu_process
 from Screens.menu_parameters.menu_parameters import menu_parameters
 from Screens.menu_principal.menu_principal import menu_principal
+from Screens.menu_informes.menu_informes import menu_informes
 
 
 class side_bar(ctk.CTkFrame):
@@ -22,6 +23,7 @@ class side_bar(ctk.CTkFrame):
         self.configure(fg_color= style.GRAY)
         self.init_widgets(active_btn_process)
     
+    
     def set_login_frame(self):
         """
         Trae al frente el frame de login, resalta el botón de login 
@@ -33,6 +35,8 @@ class side_bar(ctk.CTkFrame):
         self.frame_login.grid(row = 0, column = 1, sticky = ctk.NSEW)
 
         self.bt_login.configure(**style.ALTER_BUTTONSTYLE)
+        self.bt_informes.configure(**style.BUTTONSTYLE)
+        self.bt_informes.configure(font = style.FONTTITLES2)
         self.bt_procesar.configure(**style.BUTTONSTYLE)
         self.bt_procesar.configure(font = style.FONTTITLES2)
         self.bt_params.configure(**style.BUTTONSTYLE)
@@ -47,17 +51,21 @@ class side_bar(ctk.CTkFrame):
         """
         #self.controller.show_frame(menu_process)
 
+        if menu_parameters in self.controller.frames:
+            self.frame_param.destroy()
+            del self.controller.frames[menu_parameters]
+        if menu_informes in self.controller.frames:
+            self.frame_param.destroy()
+            del self.controller.frames[menu_informes]
+
         self.frame_process = menu_process(self.controller.container,self.controller)
         self.frame_process.grid(row = 0, column = 1, sticky = ctk.NSEW)
         self.controller.frames[menu_process] = self.frame_process
         
-        if menu_parameters in self.controller.frames:
-            self.frame_param.destroy()
-            del self.controller.frames[menu_parameters]
-
-
         self.bt_procesar.configure(**style.ALTER_BUTTONSTYLE)
         self.bt_procesar.configure(font = style.FONTTITLES2)
+        self.bt_informes.configure(**style.BUTTONSTYLE)
+        self.bt_informes.configure(font = style.FONTTITLES2)
         self.bt_login.configure(**style.BUTTONSTYLE)
         self.bt_params.configure(**style.BUTTONSTYLE)
         self.bt_params.configure(font = style.FONTTITLES2)
@@ -70,17 +78,45 @@ class side_bar(ctk.CTkFrame):
         """
         #self.controller.show_frame(menu_parameters)
         
-        self.frame_param = menu_parameters(self.controller.container,self.controller)
-        self.frame_param.grid(row = 0, column = 1, sticky = ctk.NSEW)
-        self.controller.frames[menu_parameters] = self.frame_param
-
         if menu_process in self.controller.frames:
             self.frame_process.destroy()
             del self.controller.frames[menu_process]
-            
+        if menu_informes in self.controller.frames:
+            self.frame_param.destroy()
+            del self.controller.frames[menu_informes]
 
-
+        self.frame_param = menu_parameters(self.controller.container,self.controller)
+        self.frame_param.grid(row = 0, column = 1, sticky = ctk.NSEW)
+        self.controller.frames[menu_parameters] = self.frame_param
+  
         self.bt_params.configure(**style.ALTER_BUTTONSTYLE)
+        self.bt_params.configure(font = style.FONTTITLES2)
+        self.bt_informes.configure(**style.BUTTONSTYLE)
+        self.bt_informes.configure(font = style.FONTTITLES2)
+        self.bt_login.configure(**style.BUTTONSTYLE)
+        self.bt_procesar.configure(**style.BUTTONSTYLE)
+        self.bt_procesar.configure(font = style.FONTTITLES2)
+    
+    def set_informes_frame(self):
+        """
+        Trae al frente el frame de informes, 
+        resalta el botón de informes y vuelve a la normalidad los demás botones.
+        """
+        #self.controller.show_frame(menu_parameters)
+        if menu_process in self.controller.frames:
+            self.frame_process.destroy()
+            del self.controller.frames[menu_process]
+        if menu_parameters in self.controller.frames:
+            self.frame_param.destroy()
+            del self.controller.frames[menu_parameters]
+        
+        self.frame_param = menu_informes(self.controller.container,self.controller)
+        self.frame_param.grid(row = 0, column = 1, sticky = ctk.NSEW)
+        self.controller.frames[menu_informes] = self.frame_param
+
+        self.bt_informes.configure(**style.ALTER_BUTTONSTYLE)
+        self.bt_informes.configure(font = style.FONTTITLES2)
+        self.bt_params.configure(**style.BUTTONSTYLE)
         self.bt_params.configure(font = style.FONTTITLES2)
         self.bt_login.configure(**style.BUTTONSTYLE)
         self.bt_procesar.configure(**style.BUTTONSTYLE)
@@ -146,8 +182,22 @@ class side_bar(ctk.CTkFrame):
         self.bt_params.pack(
               fill = ctk.BOTH, 
               expand = True,
-              pady = (0,250)
-              )  
+              )
+        #botón definir parametros
+        self.bt_informes = ctk.CTkButton(
+            self,
+            text = "Informes",
+            **style.BUTTONSTYLE,
+            command= self.set_informes_frame,
+            corner_radius=0,
+            state = active_btn_process
+        )
+        self.bt_informes.configure(font = style.FONTTITLES2)
+        self.bt_informes.pack(
+              fill = ctk.BOTH, 
+              expand = True,
+              pady = (0,200)
+        )  
     #Label que indica el usuario que está activo en el sistema   
     def init_user(self):
         self.lb_user = ctk.CTkLabel(

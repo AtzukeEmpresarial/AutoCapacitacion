@@ -575,7 +575,23 @@ def verificar_inventario(self, cnx_nac, codinv: int, provedor: str, planta:str):
         df_items = pd.read_sql(sql,con = cnx_nac)# type: ignore
         return(df_items) 
     except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "No se pudo consultar en items \npor favor verifique su conexión")  
+        self.login_message = alert_message(self,self, "No se pudo consultar en items \npor favor verifique su conexión")
+
+def verificar_provedor(self, cnx_nac, nombre: str) :
+    try:
+        sql = f"SELECT * FROM CISLIBPR.PROVEEDORES WHERE NOMBRE = '{nombre}'"
+        df_proveedor = pd.read_sql(sql, con = cnx_nac)
+        return(df_proveedor)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar provedores \npor favor verifique su conexión")
+
+def verificar_planta(self, cnx_nac, ubicacion: str, operador: str, produccion: int) :
+    try:
+        sql = f"SELECT * FROM CISLIBPR.PLANTAS WHERE UBICACION = '{ubicacion}' AND OPERADOR = '{operador}' AND PRODUCCION = {produccion}"
+        df_planta = pd.read_sql(sql, con = cnx_nac)
+        return(df_planta)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar plantas \npor favor verifique su conexión")
 
 def items(self, cnx_nac):
     """Consulta los pedidos items, recibe:
@@ -587,7 +603,9 @@ def items(self, cnx_nac):
         df_items = pd.read_sql(sql,con = cnx_nac)# type: ignore
         return(df_items) 
     except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "No se pudo consultar los pedidos pendientes \npor favor verifique su conexión")   
-    
+        self.login_message = alert_message(self,self, "No se pudo consultar los pedidos pendientes \npor favor verifique su conexión")
 
-    
+
+#_______________________________________________INFORMES__________________________________________________________
+def movimientos_plastico(self, cnx_nac,):
+    sql = "SELECT * FROM CISLIBPR.MOVIMIENTOS WHERE FECHA >= '20230401' AND FECHA <= '20230407' AND CODINV = 31 AND PLANTA = 'BOGOTA' AND PROVEEDOR = 'IDEMIA'"

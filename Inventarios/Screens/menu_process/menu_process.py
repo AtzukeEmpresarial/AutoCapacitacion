@@ -27,6 +27,7 @@ class menu_process(ctk.CTkFrame):
         #conexión que usara esta pantalla
         self.cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID={};PWD={}'.format(controller.user, controller.password), autocommit=True )
         #Lista que contiene los consecutivos
+        self.ls_plasticos =[]
         self.ls_pedidos = []
         self.ls_pedidos_idemia = []
         self.ls_proveedores = []
