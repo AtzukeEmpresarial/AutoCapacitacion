@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import pandas as pd
 from Screens.message.message import alert_message
+from tksheet import Sheet
 
 from constants import style
 from Functions import validations, DBC
@@ -42,7 +43,7 @@ def insert_planta(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
     creación de plantas; guarda en un diccionario los datos en los entry
     para convertirlo en un DataFrame y posteriormente enviarlo a la función
-    de la ODBC que guarda las plantas.'''
+    de la DBC que guarda las plantas.'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
     df_planta = DBC.verificar_planta(self, self.cnx_nac, self.cb_ubicacion_planta.get(),self.cb_proveedor_planta.get(),int(self.chk_planta_produccion.get()))
@@ -52,7 +53,6 @@ def insert_planta(self):
                 'UBICACION' : [self.cb_ubicacion_planta.get()],
                 'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
                 'OPERADOR' : [self.cb_proveedor_planta.get()],
-                'LT' : [int(self.et_lt_planta.get())],
                 'ACTIVA' : [int(self.chk_planta_inactiva.get())],
                 'PRODUCCION' : [int(self.chk_planta_produccion.get())]
             }
@@ -66,10 +66,10 @@ def insert_planta(self):
 
 def clean_planta (self):
     '''Limpia la información de los widgets de plasticos'''
+    self.et_id_planta.delete(0, ctk.END)
     self.ubicacion_planta_var.set("")
     self.tb_descripcion_planta.delete(1.0, ctk.END)
     self.proveedor_planta_var.set("")
-    self.et_lt_planta.delete(0, ctk.END)
     self.planta_inactiva_var.set(False)
     self.planta_produccion_var.set(False)
 
@@ -81,14 +81,12 @@ def load_in_widgets_planta(self, df: pd.DataFrame):
     self.ubicacion_planta_var.set("")
     self.tb_descripcion_planta.delete(1.0, ctk.END)
     self.proveedor_planta_var.set("")
-    self.et_lt_planta.delete(0, ctk.END)
     self.planta_inactiva_var.set(False)
     self.planta_produccion_var.set(False)
 
     self.ubicacion_planta_var.set(df.loc[0,"UBICACION"])
     self.tb_descripcion_planta.insert(1.0,df.loc[0,"DESCRIPCION"])
     self.proveedor_planta_var.set(df.loc[0,"OPERADOR"])
-    self.et_lt_planta.insert(0, df.loc[0,"LT"])
     self.planta_inactiva_var.set(str(df.loc[0,"ACTIVA"]))
     self.planta_produccion_var.set(str(df.loc[0,"PRODUCCION"]))
 
@@ -108,7 +106,7 @@ def update_planta(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
     creación de plantas; guarda en un diccionario los datos en los entry
     para convertirlo en un DataFrame y posteriormente enviarlo a la función
-    de la ODBC que guarda los plantas.'''
+    de la DBC que guarda los plantas.'''
 
     self.confirm_action("¿Seguro que desea actualizar este registro?")
     
@@ -124,13 +122,52 @@ def update_planta(self):
             'UBICACION' : [self.cb_ubicacion_planta.get()],
             'DESCRIPCION' : [self.tb_descripcion_planta.get("1.0","end-1c")],
             'OPERADOR' : [self.cb_proveedor_planta.get()],
-            'LT' : [int(self.et_lt_planta.get())],
             'ACTIVA' : [int(self.chk_planta_inactiva.get())],
             'PRODUCCION' : [int(self.chk_planta_produccion.get())]
             }
             plantas_df = pd.DataFrame(plantas_dic)
             DBC.update(self, self.cnx_nac,plantas_df,int(self.et_id_planta.get()),"PLANTAS")
             self.cfm = False
+
+def ver_plantas(self):
+    if not self.tabla_planta:
+        self.df_ver_plantas = DBC.find(self, self.cnx_nac, "PLANTAS")
+        #Tabla en la cual se colocan los datos
+        self.sheet_plantas = Sheet(
+            self.tab_parametros.tab(self.tab2),
+            data = self.df_ver_plantas.values.tolist(),# type: ignore
+            headers= self.df_ver_plantas.columns.tolist(),# type: ignore
+            show_x_scrollbar= True,
+            font = style.FONT_NORMAL, 
+            header_font = style.FONT_NORMAL
+        )
+        self.sheet_plantas.place(
+            relx = 0,
+            rely = 0,
+            relwidth = 0.80,
+            relheight = 1
+        )
+        self.tabla_planta = True
+        #Botón para ver todos los provedores
+        self.bt_guardar_excel_plantas = ctk.CTkButton(
+            self.tab_parametros.tab(self.tab2),
+            **style.SMALLBUTTONSTYLE,
+            text = "A Excel",
+            command = self.df_a_excel_plantas_con,
+            width= 90
+        )
+        self.bt_guardar_excel_plantas.place(
+            relx = 0.83,
+            rely = 0.54
+    )
+    else:
+        self.sheet_plantas.destroy()
+        self.bt_guardar_excel_plantas.destroy()
+        self.tabla_planta = False
+
+def df_a_excel_plantas(self):
+     DBC.excel(self.df_ver_plantas, "Plantas")
+     self.login_message = alert_message(self,self, "Excel Plantas creado con exito")
 
 def plantas (self):
     ls_ciudades = ["BOGOTA", "MEDELLIN", "CALI", "BARRANQUILLA", "CARTAGENA", "CUCUTA", "BUCARAMANGA", "IBAGUE", "SOLEDAD", "PASTO", "VILLAVICENCIO", "VALLEDUPAR", "MONTERIA", "MANIZALES", "ARMENIA", "SOACHA", "PEREIRA", "BUENAVENTURA", "POPAYAN", "NEIVA", "FLORENCIA", "IZTAPALAPA"]
@@ -178,28 +215,6 @@ def plantas (self):
         relx = 0.40,
         rely = 0.05,
         relwidth = 0.20
-    )
-    #Label y entry del LT correspondiente a la planta
-    self.lb_lt_planta = ctk.CTkLabel(
-        self.tab_parametros.tab(self.tab2),
-        **style.STYLELABEL,
-        text= "LT:",
-        fg_color="transparent"
-    )
-    self.lb_lt_planta.place(
-        relx = 0.72,
-        rely = 0.05
-    )
-    self.et_lt_planta = ctk.CTkEntry(
-        self.tab_parametros.tab(self.tab2),
-        placeholder_text = "",
-        validate = "key",
-        validatecommand = (self.controller.register(validations.validate_input_numeric),"%P")
-    )
-    self.et_lt_planta.place(
-        relx = 0.76,
-        rely = 0.05,
-        relwidth = 0.05
     )
     #Label y Combobox del proveedor de la planta
     self.lb_proveedor_planta = ctk.CTkLabel(
@@ -353,4 +368,16 @@ def plantas (self):
     self.bt_edit_planta.place(
         relx = 0.83,
         rely = 0.40
+    )
+    #Botón para ver todas las plantas
+    self.bt_ver_plantas = ctk.CTkButton(
+        self.tab_parametros.tab(self.tab2),
+        **style.SMALLBUTTONSTYLE,
+        text = "Todas",
+        command = self.ver_plantas_con,
+        width= 90
+    )
+    self.bt_ver_plantas.place(
+        relx = 0.83,
+        rely = 0.47
     )

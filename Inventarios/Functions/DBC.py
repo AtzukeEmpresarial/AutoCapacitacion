@@ -4,146 +4,7 @@ import requests
 from Screens.message.message import alert_message
 import re
 
-
-def check_credentials (user: str, password: str):
-    """
-    Función que se encarga de verificar si un usuario existe 
-    en el sistema de Nacional o Medellín segun se configure,
-    a esta función entran:
-    user = Usuario.
-    password = Contraseña del usuario.
-    """
-    try:
-        cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID={};PWD={}'.format(user,password), autocommit=True )
-        print("conexión exitosa")
-        cnx_nac.close()
-        return(True)
-    except pyodbc.InterfaceError:
-        print("usuario y/o contraseña no validos")
-        return(False)
-
-def import_from_excel (self, path: str, nombre_hoja: str):
-    """
-    Función que se encarga de importar los datos de un excel
-    a un formato que le pueda dar uso Pandas, esta función recibe:
-    path = dirección o ruta del archivo excel.
-    """
-    try:
-        df_excel = pd.read_excel(path,sheet_name= nombre_hoja) #, skiprows= 1
-        return (df_excel)
-    except Exception:
-        self.login_message = alert_message(self,self, "La ruta ingresada es incorrecta o el archivo no es compatiple")
-
-def load_in_inventariostj (self, cnx_nac,  df_inventarios: pd.DataFrame):
-    try:
-        cursor = cnx_nac.cursor()
-        cursor.execute("DELETE FROM CISLIBPR.INVENTARIOTJ")
-        for index, row in df_inventarios.iterrows():
-            cursor.execute("INSERT INTO CISLIBPR.INVENTARIOTJ (CODINV,NOMBRE,PROVEDOR,PLANTA,CANTIDAD) VALUES(?,?,?,?,?)", row.CODINV,row.NOMBRE,row.PROVEDOR,row.PLANTA,row.CANTIDAD)
-        cursor.commit()
-        cursor.close()
-        cnx_nac.close()
-        self.login_message = alert_message(self,self, "Se cargó el inventario con exito")
-    except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "Los datos no se pudieron descargar\npor favor verifique su conexión y el excel seleccionado")
-
-def df_to_sql_bulk_insert(df: pd.DataFrame, table: str, **kwargs) -> str:
-    """Metodo que convierte un dataframe valido en una sentencia SQL
-    para insertar en la base de datos, recibe:
-    df = Dataframe a convertir en sentencia insert de SQL
-    tabla = Tabla de la base de datos en donde se realizará la inserción.
-    return:
-    String  que contiene la sentencia insert de SQL para agregar los datos del Dataframe"""
-    df = df.copy().assign(**kwargs)
-    columns = ", ".join(df.columns)
-    tuples = map(str, df.itertuples(index=False, name=None))
-    values = re.sub(r"(?<=\W)(nan|None)(?=\W)", "NULL", (",\n" + " " * 7).join(tuples))
-    return f"INSERT INTO {table} ({columns})\nVALUES {values}"
-
-def df_to_sql_bulk_update(df: pd.DataFrame,index: int, table: str, **kwargs) -> str:
-    """Metodo que convierte un dataframe valido en una sentencia SQL
-    para actualizar en la base de datos, recibe:
-    df = Dataframe a convertir en sentencia update de SQL
-    index = ID del registro que se debe actualizar
-    table = tabla en la base de datos donde se realizará la actualización
-    return:
-    String  que contiene la sentencia insert de SQL para actualizar los datos del Dataframe"""
-    df = df.copy().assign(**kwargs)
-    columns = ", ".join(df.columns)
-    tuples = map(str, df.itertuples(index=False, name=None))
-    values = re.sub(r"(?<=\W)(nan|None)(?=\W)", "NULL", (",\n" + " " * 7).join(tuples))
-    return f"UPDATE {table} SET ({columns})\n= {values} WHERE ID = {index} "
-
-
-def insert(self, cnx_nac , dataframe: pd.DataFrame, tabla: str):
-    '''Metodo que se encarga de guardar datos de un Dataframe 
-    en una tabla en especifico de la base de datos (NACIONAL):
-    cnx_nac = Conexión a nacional.
-    dataframe = DataFrame que se insertará en la base de datos
-    tabla = string con el nombre de la tabla a consultar'''
-    try:
-        cursor = cnx_nac.cursor()# type: ignore
-        sql_str = df_to_sql_bulk_insert(dataframe,"CISLIBPR.{}".format(tabla))
-        print(sql_str)
-        cursor.execute(sql_str)
-        cnx_nac.commit()# type: ignore
-        cursor.close()
-        self.login_message = alert_message(self,self, "¡Se creó correctamente el registro!")
-    except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "El registro no se pudo crear correctamente\npor favor verifique su conexión y los datos ingresados")
-
-def update(self, cnx_nac , dataframe: pd.DataFrame, index: int, tabla: str):
-    '''Metodo que se encarga de actualizar los datos de un Dataframe 
-    en una tabla en especifico de la base de datos (NACIONAL):
-    cnx_nac = Conexión a nacional.
-    dataframe = DataFrame que se insertará en la base de datos
-    index = Indice a actualizar.
-    tabla = string con el nombre de la tabla a consultar'''
-    try:
-        cursor = cnx_nac.cursor()# type: ignore
-        sql_str = df_to_sql_bulk_update(dataframe,index,"CISLIBPR.{}".format(tabla))
-        print(sql_str)
-        cursor.execute(sql_str)
-        cnx_nac.commit()# type: ignore
-        cursor.close()
-        self.login_message = alert_message(self,self, "¡El registro se actualizó correctamente!")
-    except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "El registro no se pudo actualizar\npor favor verifique su conexión y los datos ingresados")
-
-
-def find_by(cnx_nac, columna: str, id: int, tabla: str):
-    '''Metodo que se encaga de consultar desde la base de datos según el ID
-    y retorna un DataFrame recibiendo:
-    id = int con el id del registro que se busca
-    tabla = string con el nombre de la tabla a consultar
-    return:
-    DataFrame que contiene el registro correspondiente al ID'''
-    sql = '''SELECT * FROM CISLIBPR.{} WHERE {} = {}'''.format(tabla, columna, id)
-    ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
-    return(ids_df)
-
-def find_by_nombre(cnx_nac, columna: str, nombre: str, tabla: str):
-    '''Metodo que se encaga de consultar desde la base de datos según el CODINV
-    y retorna un DataFrame recibiendo:
-    DataFrame que contiene el registro correspondiente al nombre'''
-    sql = """SELECT * FROM CISLIBPR.{} WHERE {} = '{}'""".format(tabla, columna, nombre)
-    codinv_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
-    return(codinv_df)
-
-def find_by_id_traslados(self, cnx_nac, id: int):
-    '''Metodo que se encaga de consultar desde la base de datos según el ID
-    y retorna un DataFrame recibiendo:
-    id = int con el id del registro que se busca
-    return:
-    DataFrame que contiene el registro correspondiente al ID'''
-    try:
-        sql = '''SELECT * FROM CISLIBPR.MOVIMIENTOS WHERE ID = {} AND IDTIPOMOV = 2'''.format(id)
-        ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
-        return(ids_df)
-    except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "No existe el registro asociado a esa ID\npor favor verifique su conexión y el ID solicitado")
-    
-
+#______________________________GLOBAL_______________________________________________________
 def find_indexes(cnx_nac,index_name: str, tabla: str):
     '''Consulta los registros existentes en la tabla dada 
     según el indice indicado recibiendo:
@@ -184,22 +45,115 @@ def find_indexes_where_int(cnx_nac,index_name: str, tabla: str, index_condition:
     indexes = indexes_df.loc[:,index_name] # type: ignore
     return(indexes)
 
-def find_planta_x_provedor(self, cnx_nac, provedor: str):
-    '''consulta las plantas según su provedor.
-    return:
-    Serie de pandas que contiene todos registros según el indice 
-    indicado de la tabla.'''
-    sql = f"""SELECT * FROM CISLIBPR.PLANTAS WHERE OPERADOR = '{provedor}' AND PRODUCCION = 0"""
-    indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
-    indexes = indexes_df.loc[:,"UBICACION"] # type: ignore
-    return(indexes)
+def import_from_excel (self, path: str, nombre_hoja: str):
+    """
+    Función que se encarga de importar los datos de un excel
+    a un formato que le pueda dar uso Pandas, esta función recibe:
+    path = dirección o ruta del archivo excel.
+    """
+    try:
+        df_excel = pd.read_excel(path,sheet_name= nombre_hoja) #, skiprows= 1
+        return (df_excel)
+    except Exception:
+        self.login_message = alert_message(self,self, "La ruta ingresada es incorrecta o el archivo no es compatiple")
 
-def inventario_x_planta_provedor(self, cnx_nac, planta: str, provedor: str):
-    """COnsulta el ivnentario según la planta y el provedor, 
-    retorna un DF con estos datos"""
-    sql = f"SELECT * FROM CISLIBPR.INVENTARIOTJ WHERE PLANTA = '{planta}' AND PROVEDOR = '{provedor}'"
-    df = pd.read_sql(sql, con = cnx_nac)
-    return(df)
+def import_from_excel_reporte_semanal (self, path: str, nombre_hoja: str):
+    """
+    Función (propia del reporte semanal) que se encarga de importar los datos de un excel
+    a un formato que le pueda dar uso Pandas, esta función recibe:
+    path = dirección o ruta del archivo excel.
+    """
+    try:
+        df_excel = pd.read_excel(path,sheet_name= nombre_hoja, skiprows= 1)
+        return (df_excel)
+    except Exception:
+        self.login_message = alert_message(self,self, "La ruta ingresada es incorrecta o el archivo no es compatiple")
+
+def df_to_sql_bulk_insert(df: pd.DataFrame, table: str, **kwargs) -> str:
+    """Metodo que convierte un dataframe valido en una sentencia SQL
+    para insertar en la base de datos, recibe:
+    df = Dataframe a convertir en sentencia insert de SQL
+    tabla = Tabla de la base de datos en donde se realizará la inserción.
+    return:
+    String  que contiene la sentencia insert de SQL para agregar los datos del Dataframe"""
+    df = df.copy().assign(**kwargs)
+    columns = ", ".join(df.columns)
+    tuples = map(str, df.itertuples(index=False, name=None))
+    values = re.sub(r"(?<=\W)(nan|None)(?=\W)", "NULL", (",\n" + " " * 7).join(tuples))
+    return f"INSERT INTO {table} ({columns})\nVALUES {values}"
+
+def df_to_sql_bulk_update(df: pd.DataFrame,index: int, table: str, **kwargs) -> str:
+    """Metodo que convierte un dataframe valido en una sentencia SQL
+    para actualizar en la base de datos, recibe:
+    df = Dataframe a convertir en sentencia update de SQL
+    index = ID del registro que se debe actualizar
+    table = tabla en la base de datos donde se realizará la actualización
+    return:
+    String  que contiene la sentencia insert de SQL para actualizar los datos del Dataframe"""
+    df = df.copy().assign(**kwargs)
+    columns = ", ".join(df.columns)
+    tuples = map(str, df.itertuples(index=False, name=None))
+    values = re.sub(r"(?<=\W)(nan|None)(?=\W)", "NULL", (",\n" + " " * 7).join(tuples))
+    return f"UPDATE {table} SET ({columns})\n= {values} WHERE ID = {index} "
+
+def insert(self, cnx_nac , dataframe: pd.DataFrame, tabla: str):
+    '''Metodo que se encarga de guardar datos de un Dataframe 
+    en una tabla en especifico de la base de datos (NACIONAL):
+    cnx_nac = Conexión a nacional.
+    dataframe = DataFrame que se insertará en la base de datos
+    tabla = string con el nombre de la tabla a consultar'''
+    try:
+        cursor = cnx_nac.cursor()# type: ignore
+        sql_str = df_to_sql_bulk_insert(dataframe,"CISLIBPR.{}".format(tabla))
+        print(sql_str)
+        cursor.execute(sql_str)
+        cnx_nac.commit()# type: ignore
+        cursor.close()
+        self.login_message = alert_message(self,self, "¡Se creó correctamente el registro!")
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "El registro no se pudo crear correctamente\npor favor verifique su conexión y los datos ingresados")
+
+def update(self, cnx_nac , dataframe: pd.DataFrame, index: int, tabla: str):
+    '''Metodo que se encarga de actualizar los datos de un Dataframe 
+    en una tabla en especifico de la base de datos (NACIONAL):
+    cnx_nac = Conexión a nacional.
+    dataframe = DataFrame que se insertará en la base de datos
+    index = Indice a actualizar.
+    tabla = string con el nombre de la tabla a consultar'''
+    try:
+        cursor = cnx_nac.cursor()# type: ignore
+        sql_str = df_to_sql_bulk_update(dataframe,index,"CISLIBPR.{}".format(tabla))
+        print(sql_str)
+        cursor.execute(sql_str)
+        cnx_nac.commit()# type: ignore
+        cursor.close()
+        self.login_message = alert_message(self,self, "¡El registro se actualizó correctamente!")
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "El registro no se pudo actualizar\npor favor verifique su conexión y los datos ingresados")
+
+def find(self,cnx_nac, tabla: str):
+    """Se encarga de traer en un Dataframe toda la información de una tabla, recibe:
+    tabla = Tabla a la que hace referencia la busqueda
+    retorna:
+    df = Dataframe con toda la info de la tabla"""
+    try:
+        sql = f"SELECT * FROM CISLIBPR.{tabla}"
+        df = pd.read_sql(sql, con = cnx_nac)
+        return (df)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo obtener la información solicitada \npor favor verifique su conexión")
+       
+
+def find_by(cnx_nac, columna: str, id: int, tabla: str):
+    '''Metodo que se encaga de consultar desde la base de datos según el ID
+    y retorna un DataFrame recibiendo:
+    id = int con el id del registro que se busca
+    tabla = string con el nombre de la tabla a consultar
+    return:
+    DataFrame que contiene el registro correspondiente al ID'''
+    sql = '''SELECT * FROM CISLIBPR.{} WHERE {} = {}'''.format(tabla, columna, id)
+    ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    return(ids_df)
 
 def delete(self, cnx_nac,column: str, reg: int, tabla: str):
     '''Elimina el registro indicado.
@@ -215,6 +169,223 @@ def delete(self, cnx_nac,column: str, reg: int, tabla: str):
         self.login_message = alert_message(self,self, "¡El registro se eliminó correctamente!")
     except pyodbc.InterfaceError:
         self.login_message = alert_message(self,self, "El registro no se pudo eliminar\npor favor verifique su conexión y los datos ingresados")
+
+def TRM (self):
+    url = "https://www.datos.gov.co/resource/32sa-8pi3.json?$order=vigenciadesde%20DESC&$limit=1"
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        trm = response.json()[0]["valor"]
+        return(trm)
+    else:
+        self.login_message = alert_message(self,self, "No se pudo obtener el TRM actual\npor favor verifique su conexión")
+
+def excel(df: pd.DataFrame, nombre: str):
+    with pd.ExcelWriter(nombre + '.xlsx') as writer: 
+            df.to_excel(writer, sheet_name = nombre, index = False)
+
+
+
+
+
+
+#__________________________________________LOG_IN______________________________________________
+def check_credentials (user: str, password: str):
+    """
+    Función que se encarga de verificar si un usuario existe 
+    en el sistema de Nacional o Medellín segun se configure,
+    a esta función entran:
+    user = Usuario.
+    password = Contraseña del usuario.
+    """
+    try:
+        cnx_nac = pyodbc.connect('DSN=QDSN_NACIONALET01;UID={};PWD={}'.format(user,password), autocommit=True )
+        print("conexión exitosa")
+        cnx_nac.close()
+        return(True)
+    except pyodbc.InterfaceError:
+        print("usuario y/o contraseña no validos")
+        return(False)
+    
+
+
+
+
+
+
+
+#______________________________Proveedores____________________________________________________________
+def verificar_provedor(self, cnx_nac, nombre: str) :
+    try:
+        sql = f"SELECT * FROM CISLIBPR.PROVEEDORES WHERE NOMBRE = '{nombre}'"
+        df_proveedor = pd.read_sql(sql, con = cnx_nac)
+        return(df_proveedor)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar provedores \npor favor verifique su conexión")
+
+
+
+
+
+
+#________________________________Sucursales__________________________________________
+def load_in_sucursales (self, cnx_nac,  df_sucursales: pd.DataFrame):
+    try:
+        cursor = cnx_nac.cursor()
+        cursor.execute("DELETE FROM CISLIBPR.SUCURSALES")
+        for index, row in df_sucursales.iterrows():
+            cursor.execute("INSERT INTO CISLIBPR.SUCURSALES (CODIGOOFICINA,SUCURSAL,CIUDAD,PLANTAREALCE) VALUES({},'{}','{}','{}')".format(row["CODIGOOFICINA"],row["SUCURSAL"],row["CIUDAD"],row["PLANTAREALCE"]))
+        cursor.commit()
+        cursor.close()
+        self.login_message = alert_message(self,self, "Se cargaron las sucursales con exito")
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "Los datos no se pudieron descargar\npor favor verifique su conexión y el excel seleccionado")
+
+
+
+
+
+
+
+
+
+
+
+#________________________________Plantas_____________________________________________
+def verificar_planta(self, cnx_nac, ubicacion: str, operador: str, produccion: int) :
+    try:
+        sql = f"SELECT * FROM CISLIBPR.PLANTAS WHERE UBICACION = '{ubicacion}' AND OPERADOR = '{operador}' AND PRODUCCION = {produccion}"
+        df_planta = pd.read_sql(sql, con = cnx_nac)
+        return(df_planta)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo consultar plantas \npor favor verifique su conexión")
+
+
+
+
+
+
+
+
+#______________________________________Plasticos__________________________________________
+def find_planta_x_provedor(self, cnx_nac, provedor: str):
+    '''consulta las plantas según su provedor.
+    return:
+    Serie de pandas que contiene todos registros según el indice 
+    indicado de la tabla.'''
+    sql = f"""SELECT * FROM CISLIBPR.PLANTAS WHERE OPERADOR = '{provedor}' AND PRODUCCION = 0"""
+    indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    indexes = indexes_df.loc[:,"UBICACION"] # type: ignore
+    return(indexes)
+
+
+
+
+#__________________________________ITEMS______________________________________________
+def find_codinv_by_nombre_item(cnx_nac, nombre: str):
+    '''Metodo que se encaga de consultar el CODINV desde la base de datos según el nombre 
+    de un plastico, recibiendo:
+    nombre = nombre del plastico
+    return:
+    codinv = int que indica el codigo de inventario del plastico'''
+    sql = """SELECT CODINV FROM CISLIBPR.PLASTICOS WHERE NOMBRE = '{}'""".format(nombre)
+    ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    codinv = ids_df.loc[0,"CODINV"]
+    return(codinv)
+
+def genera_lista_planta_x_provedor(cnx_nac, provedor):
+    """Metodo que se encarga de consultar la tabla de plantas"""
+    sql = f"SELECT * FROM CISLIBPR.PLANTAS WHERE OPERADOR = '{provedor}'"
+    indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    indexes = indexes_df.loc[:,"UBICACION"] # type: ignore
+    return(indexes)
+
+    
+        
+
+
+
+#_________________________Reporte Semanal__________________________________________________
+
+def comparar_inventarios_thales(self, cnx_nac, df: pd.DataFrame):
+    """Función que se encarga de generar un dataframe con los valores comparados de
+    el inventario reportado por THALES y el inventario registrado en el sistema"""
+    sql = "SELECT * FROM CISLIBPR.INVENTARIOTJ WHERE PROVEDOR = 'THALES'"
+    df_inventario = pd.read_sql(sql, con = cnx_nac)
+    df_comparativo = pd.merge(df, df_inventario, left_on="CODIGO INVENTARIO", right_on="CODINV", how = "left")
+    df_comparativo.drop(["CONSUMO SEMANAL", "DAÑOS","MUESTRAS O PRUEBAS ", "INGRESOS","ID","CODINV","NOMBRE","PROVEDOR","PLANTA"], axis = 1,inplace=True)
+    return(df_comparativo)
+    
+
+
+
+
+
+
+
+
+
+
+
+def load_in_inventariostj (self, cnx_nac,  df_inventarios: pd.DataFrame):
+    try:
+        cursor = cnx_nac.cursor()
+        cursor.execute("DELETE FROM CISLIBPR.INVENTARIOTJ")
+        for index, row in df_inventarios.iterrows():
+            cursor.execute("INSERT INTO CISLIBPR.INVENTARIOTJ (CODINV,NOMBRE,PROVEDOR,PLANTA,CANTIDAD) VALUES(?,?,?,?,?)", row.CODINV,row.NOMBRE,row.PROVEDOR,row.PLANTA,row.CANTIDAD)
+        cursor.commit()
+        cursor.close()
+        self.login_message = alert_message(self,self, "Se cargó el inventario con exito")
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "Los datos no se pudieron descargar\npor favor verifique su conexión y el excel seleccionado")
+
+
+def find_by_nombre(cnx_nac, columna: str, nombre: str, tabla: str):
+    '''Metodo que se encaga de consultar desde la base de datos según el CODINV
+    y retorna un DataFrame recibiendo:
+    DataFrame que contiene el registro correspondiente al nombre'''
+    sql = """SELECT * FROM CISLIBPR.{} WHERE {} = '{}'""".format(tabla, columna, nombre)
+    codinv_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+    return(codinv_df)
+
+def find_by_id_traslados(self, cnx_nac, id: int):
+    '''Metodo que se encaga de consultar desde la base de datos según el ID
+    y retorna un DataFrame recibiendo:
+    id = int con el id del registro que se busca
+    return:
+    DataFrame que contiene el registro correspondiente al ID'''
+    try:
+        sql = '''SELECT * FROM CISLIBPR.MOVIMIENTOS WHERE ID = {} AND IDTIPOMOV = 2'''.format(id)
+        ids_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        return(ids_df)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No existe el registro asociado a esa ID\npor favor verifique su conexión y el ID solicitado")
+    
+def find_plantas_x_proveedor(self, cnx_nac,index_name: str, provedor: str, produccion: int):
+    '''Consulta la tabla de plantas para traer solo los indices indicados, recibiendo:
+    self = objeto padre
+    cnx_nac = cadena de conexión global
+    index_condition = columna a la que se le aplicara la condición
+    provedor = Provedor a consultar
+    produccion = 0 o 1 para indicar si se busca o no plantas de produccion
+    return:
+    Serie de pandas que contiene todos registros según el indice 
+    indicado de plantas'''
+    try:
+        sql = f"""SELECT * FROM CISLIBPR.PLANTAS WHERE OPERADOR = '{provedor}' AND PRODUCCION = {produccion}"""
+        indexes_df = pd.read_sql(sql,con = cnx_nac)# type: ignore
+        indexes = indexes_df.loc[:,index_name] # type: ignore
+        return(indexes)
+    except pyodbc.InterfaceError:
+        self.login_message = alert_message(self,self, "No se pudo conectar a plantas\npor favor verifique su conexión")
+    
+def inventario_x_planta_provedor(self, cnx_nac, planta: str, provedor: str):
+    """COnsulta el ivnentario según la planta y el provedor, 
+    retorna un DF con estos datos"""
+    sql = f"SELECT * FROM CISLIBPR.INVENTARIOTJ WHERE PLANTA = '{planta}' AND PROVEDOR = '{provedor}'"
+    df = pd.read_sql(sql, con = cnx_nac)
+    return(df)
 
 def consultar_cantidad(self, cnx_nac, codinv: int, planta: str, proveedor: str):
     """Consulta la cantidad de plasticos disponibles en una planta de un proveedor 
@@ -248,8 +419,10 @@ def consultar_ultimo_pedido_thales_idemia(self, cnx_nac):
     for index, row in df_pedidos.iterrows():
         self.ls_pedidos.append(row["ULTIMOTHALES"])
         self.ls_pedidos.append(row["ULTIMOIDEMIA"])
+        self.ls_pedidos.append(row["ULTIMOMANANA"])
+        self.ls_pedidos.append(row["ULTIMOTARDE"])
 
-def actualizar_ultimo_pedido_thales_idemia(self, cnx_nac, ultimo_thales_actual: int, ultimo_idemia_actual: int):
+def actualizar_ultimo_pedido_thales_idemia(self, cnx_nac, ultimo_thales_actual: int, ultimo_idemia_actual: int, ultimo_manana_actual: int, ultimo_tarde_actual: int):
     """Consulta la tabla de ultimo pedido y actualiza la lista
     con  el ultimo codigo de pedido de thales e idemia en su lista correspondiente,
     requiere:
@@ -261,7 +434,7 @@ def actualizar_ultimo_pedido_thales_idemia(self, cnx_nac, ultimo_thales_actual: 
         cursor = cnx_nac.cursor()
         self.ls_pedidos[:] = []
         sql1 = """DELETE FROM CISLIBPR.CODIGOPED"""
-        sql2 = '''INSERT INTO CISLIBPR.CODIGOPED (ULTIMOTHALES, ULTIMOIDEMIA) VALUES ({},{})'''.format(ultimo_thales_actual, ultimo_idemia_actual)
+        sql2 = '''INSERT INTO CISLIBPR.CODIGOPED (ULTIMOTHALES, ULTIMOIDEMIA, ULTIMOMANANA, ULTIMOTARDE) VALUES ({},{},{},{})'''.format(ultimo_thales_actual, ultimo_idemia_actual, ultimo_manana_actual, ultimo_tarde_actual)
         cursor.execute(sql1)
         cursor.execute(sql2)
         cursor.commit()
@@ -387,7 +560,7 @@ def alimentar_inventario(self, cnx_nac, df_thales: pd.DataFrame, df_idemia: pd.D
     except pyodbc.InterfaceError:
         self.login_message = alert_message(self,self, "No se pudo actualizar el inventario\npor favor verifique su conexión, fecha y consecutivos ingresados")
 
-def daily(self, cnx_nac, fecha: str, pedido_thales: int, ls_pedidos_idemia):
+def daily(self, cnx_nac, fecha: str, pedido_thales: int, ls_pedidos_idemia, ls_pedidos_manana, ls_pedidos_tarde):
     """Consulta en nacional todos los realces que se realizaron el día seleccionado y
     devuelve varios Dataframe en una lista"""
     try:
@@ -506,7 +679,8 @@ def daily(self, cnx_nac, fecha: str, pedido_thales: int, ls_pedidos_idemia):
         df_idemia_completo["NOMBRETARJETA"] =lista_idemia_name
         #creamos un filtro para que solo sean los pedidos deseados
         filter_thales = df_thales_completo.CDGPED.isin([pedido_thales])
-        filter_idemia = df_idemia_completo.CDGPED.isin(ls_pedidos_idemia)
+        ls_pedidos = ls_pedidos_idemia + ls_pedidos_manana + ls_pedidos_tarde
+        filter_idemia = df_idemia_completo.CDGPED.isin(ls_pedidos)
         df_thales_completo2 = df_thales_completo[filter_thales]
         print(df_thales_completo2)
         df_idemia_completo2 = df_idemia_completo[filter_idemia]
@@ -557,17 +731,6 @@ def daily(self, cnx_nac, fecha: str, pedido_thales: int, ls_pedidos_idemia):
         return(alerta)
     except pyodbc.InterfaceError:
         self.login_message = alert_message(self,self, "Los datos no se pudieron descargar\npor favor verifique su conexión, fecha y consecutivos ingresados")
-
-def TRM (self):
-    url = "https://www.datos.gov.co/resource/32sa-8pi3.json?$order=vigenciadesde%20DESC&$limit=1"
-
-    response = requests.get(url)
-
-    if response.status_code == 200:
-        trm = response.json()[0]["valor"]
-        return(trm)
-    else:
-        self.login_message = alert_message(self,self, "No se pudo obtener el TRM actual\npor favor verifique su conexión")
     
 def verificar_inventario(self, cnx_nac, codinv: int, provedor: str, planta:str):
     try: 
@@ -576,22 +739,6 @@ def verificar_inventario(self, cnx_nac, codinv: int, provedor: str, planta:str):
         return(df_items) 
     except pyodbc.InterfaceError:
         self.login_message = alert_message(self,self, "No se pudo consultar en items \npor favor verifique su conexión")
-
-def verificar_provedor(self, cnx_nac, nombre: str) :
-    try:
-        sql = f"SELECT * FROM CISLIBPR.PROVEEDORES WHERE NOMBRE = '{nombre}'"
-        df_proveedor = pd.read_sql(sql, con = cnx_nac)
-        return(df_proveedor)
-    except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "No se pudo consultar provedores \npor favor verifique su conexión")
-
-def verificar_planta(self, cnx_nac, ubicacion: str, operador: str, produccion: int) :
-    try:
-        sql = f"SELECT * FROM CISLIBPR.PLANTAS WHERE UBICACION = '{ubicacion}' AND OPERADOR = '{operador}' AND PRODUCCION = {produccion}"
-        df_planta = pd.read_sql(sql, con = cnx_nac)
-        return(df_planta)
-    except pyodbc.InterfaceError:
-        self.login_message = alert_message(self,self, "No se pudo consultar plantas \npor favor verifique su conexión")
 
 def items(self, cnx_nac):
     """Consulta los pedidos items, recibe:

@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import pandas as pd
+from tksheet import Sheet
 from Screens.message.message import alert_message
 
 from constants import style
@@ -86,16 +87,6 @@ def clean (self):
     self.et_segmento.delete(0,ctk.END)
     self.et_cantidad.delete(0,ctk.END)
     self.descont_var.set(False)
-    self.idemia_produc_cali_var.set(False)
-    self.thales_produc_iztapalapa_var.set(False)
-    self.thales_produc_asia_var.set(False)
-    self.idemia_real_cali_var.set(False)
-    self.idemia_real_bogo_var.set(False)
-    self.idemia_real_mede_var.set(False)
-    self.idemia_real_pere_var.set(False)
-    self.idemia_real_buca_var.set(False)
-    self.idemia_real_bquilla_var.set(False)
-    self.thales_real_bogo_var.set(False)
 
 def load_in_widgets(self, df: pd.DataFrame):
     '''Carga la información contenida en un dataframe en los widgets de plasticos,
@@ -129,16 +120,6 @@ def load_in_widgets(self, df: pd.DataFrame):
     self.tb_observaciones.insert(1.0,df.loc[0,"OBSERVACIONES"])
     self.et_segmento.insert(0,df.loc[0,"SEGMENTO"])
     self.descont_var.set(str(df.loc[0,"DESCONT"]))
-    self.idemia_produc_cali_var.set(str(df.loc[0,"PIDEMIACALI"]))
-    self.thales_produc_iztapalapa_var.set(str(df.loc[0,"PTHALESIZTA"]))
-    self.thales_produc_asia_var.set(str(df.loc[0,"PTHALESASIA"]))
-    self.idemia_real_cali_var.set(str(df.loc[0,"RIDEMIACALI"]))
-    self.idemia_real_bogo_var.set(str(df.loc[0,"RIDEMIABOGO"]))
-    self.idemia_real_mede_var.set(str(df.loc[0,"RIDEMIAMEDE"]))
-    self.idemia_real_pere_var.set(str(df.loc[0,"RIDEMIAPERE"]))
-    self.idemia_real_buca_var.set(str(df.loc[0,"RIDEMIABUCA"]))
-    self.idemia_real_bquilla_var.set(str(df.loc[0,"RIDEMIABARRA"]))
-    self.thales_real_bogo_var.set(str(df.loc[0,"RTHALESBOGO"]))
     self.et_cantidad.insert(0,str(df.loc[0,"CANTIDAD"]))
 
 def load_in_widgets_codinv(self, df: pd.DataFrame):
@@ -173,23 +154,13 @@ def load_in_widgets_codinv(self, df: pd.DataFrame):
     self.tb_observaciones.insert(1.0,df.loc[0,"OBSERVACIONES"])
     self.et_segmento.insert(0,df.loc[0,"SEGMENTO"])
     self.descont_var.set(str(df.loc[0,"DESCONT"]))
-    self.idemia_produc_cali_var.set(str(df.loc[0,"PIDEMIACALI"]))
-    self.thales_produc_iztapalapa_var.set(str(df.loc[0,"PTHALESIZTA"]))
-    self.thales_produc_asia_var.set(str(df.loc[0,"PTHALESASIA"]))
-    self.idemia_real_cali_var.set(str(df.loc[0,"RIDEMIACALI"]))
-    self.idemia_real_bogo_var.set(str(df.loc[0,"RIDEMIABOGO"]))
-    self.idemia_real_mede_var.set(str(df.loc[0,"RIDEMIAMEDE"]))
-    self.idemia_real_pere_var.set(str(df.loc[0,"RIDEMIAPERE"]))
-    self.idemia_real_buca_var.set(str(df.loc[0,"RIDEMIABUCA"]))
-    self.idemia_real_bquilla_var.set(str(df.loc[0,"RIDEMIABARRA"]))
-    self.thales_real_bogo_var.set(str(df.loc[0,"RTHALESBOGO"]))
     self.et_cantidad.insert(0,str(df.loc[0,"CANTIDAD"]))
       
 def insert(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
     creación de plasticos; guarda en un diccionario los datos en los entry
     para convertirlo en un DataFrame y posteriormente enviarlo a la función
-    de la ODBC que guarda los plasticos.
+    de la DBC que guarda los plasticos.
     SE REVISA QUE EL CODIGO DE INVENTARIO NO EXISTA'''
 
     self.confirm_action("¿Seguro que desea crear este registro?")
@@ -216,16 +187,6 @@ def insert(self):
                 'OBSERVACIONES' : [self.tb_observaciones.get("1.0","end-1c")],
                 'SEGMENTO' : [self.et_segmento.get()],
                 'DESCONT' : [int(self.chk_descontinuado.get())],
-                'PIDEMIACALI':[int(self.chk_idemia_produc_cali.get())],
-                'PTHALESIZTA':[int(self.chk_thales_produc_iztapalapa.get())],
-                'PTHALESASIA':[int(self.chk_thales_produc_asia.get())],
-                'RIDEMIACALI':[int(self.chk_idemia_real_cali.get())],
-                'RIDEMIABOGO':[int(self.chk_idemia_real_bogo.get())],
-                'RIDEMIAMEDE':[int(self.chk_idemia_real_mede.get())],
-                'RIDEMIAPERE':[int(self.chk_idemia_real_pere.get())],
-                'RIDEMIABUCA':[int(self.chk_idemia_real_buca.get())],
-                'RIDEMIABARRA':[int(self.chk_idemia_real_bquilla.get())],
-                'RTHALESBOGO':[int(self.chk_thales_real_bogo.get())],
                 'CANTIDAD' : [int(self.et_cantidad.get())],
                 'FECHA' : [self.fecha.strftime("%Y%m%d")],
             }
@@ -239,7 +200,7 @@ def update(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
     creación de plasticos; guarda en un diccionario los datos en los entry
     para convertirlo en un DataFrame y posteriormente enviarlo a la función
-    de la ODBC que guarda los plasticos.
+    de la DBC que guarda los plasticos.
     SE REVISA QUE EL CODIGO DE INVENTARIO NO EXISTA'''
 
     self.confirm_action("¿Seguro que desea actualizar este registro?")
@@ -266,16 +227,6 @@ def update(self):
                 'OBSERVACIONES' : [self.tb_observaciones.get("1.0","end-1c")],
                 'SEGMENTO' : [self.et_segmento.get()],
                 'DESCONT' : [int(self.chk_descontinuado.get())],
-                'PIDEMIACALI':[int(self.chk_idemia_produc_cali.get())],
-                'PTHALESIZTA':[int(self.chk_thales_produc_iztapalapa.get())],
-                'PTHALESASIA':[int(self.chk_thales_produc_asia.get())],
-                'RIDEMIACALI':[int(self.chk_idemia_real_cali.get())],
-                'RIDEMIABOGO':[int(self.chk_idemia_real_bogo.get())],
-                'RIDEMIAMEDE':[int(self.chk_idemia_real_mede.get())],
-                'RIDEMIAPERE':[int(self.chk_idemia_real_pere.get())],
-                'RIDEMIABUCA':[int(self.chk_idemia_real_buca.get())],
-                'RIDEMIABARRA':[int(self.chk_idemia_real_bquilla.get())],
-                'RTHALESBOGO':[int(self.chk_thales_real_bogo.get())],
                 'CANTIDAD' : [int(self.et_cantidad.get())],
                 'FECHA' : [self.fecha.strftime("%Y%m%d")],
             }
@@ -283,11 +234,53 @@ def update(self):
             DBC.update(self, self.cnx_nac,plasticos_df,int(self.et_id.get()),"PLASTICOS")
             self.cfm = False
 
+def ver_plasticos(self):
+    if not self.tabla_plastico:
+        self.df_ver_plasticos = DBC.find(self, self.cnx_nac, "PLASTICOS")
+        #Tabla en la cual se colocan los datos
+        self.sheet_plasticos = Sheet(
+            self.tab_parametros.tab(self.tab1),
+            data = self.df_ver_plasticos.values.tolist(),# type: ignore
+            headers= self.df_ver_plasticos.columns.tolist(),# type: ignore
+            show_x_scrollbar= True,
+            font = style.FONT_NORMAL, 
+            header_font = style.FONT_NORMAL
+        )
+        self.sheet_plasticos.place(
+            relx = 0,
+            rely = 0,
+            relwidth = 0.80,
+            relheight = 1
+        )
+        self.tabla_plastico = True
+        #Botón para ver todos los provedores
+        self.bt_guardar_excel_plasticos = ctk.CTkButton(
+            self.tab_parametros.tab(self.tab1),
+            **style.SMALLBUTTONSTYLE,
+            text = "A Excel",
+            command = self.df_a_excel_plasticos_con,
+            width= 90
+        )
+        self.bt_guardar_excel_plasticos.place(
+            relx = 0.83,
+            rely = 0.54
+    )
+    else:
+        self.sheet_plasticos.destroy()
+        self.bt_guardar_excel_plasticos.destroy()
+        self.tabla_plastico = False
+
+def df_a_excel_plasticos(self):
+     DBC.excel(self.df_ver_plasticos, "plasticos")
+     self.login_message = alert_message(self,self, "Excel Plasticos creado con exito")
+
 def plastico (self):
     #Carga inicial de plantas
-    self.plantas_thales = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "THALES" ).to_list()
+    self.plantas_thales = DBC.find_plantas_x_proveedor(self, self.cnx_nac,"UBICACION","THALES",0 ).to_list()# type: ignore
     self.plantas_thales.sort()
-    self.plantas_idemia = DBC.find_indexes_where(self.cnx_nac,"UBICACION","PLANTAS", "OPERADOR", "IDEMIA" ).to_list()
+    self.plantas_thales_produccion = DBC.find_plantas_x_proveedor(self, self.cnx_nac,"UBICACION","THALES",1 ).to_list()# type: ignore
+    self.plantas_thales.sort()
+    self.plantas_idemia = DBC.find_plantas_x_proveedor(self, self.cnx_nac,"UBICACION","IDEMIA",0).to_list()# type: ignore
     self.plantas_thales.sort()
     #Label y entry (no activo) de la ID del plastico
     self.lb_id = ctk.CTkLabel(
@@ -575,7 +568,7 @@ def plastico (self):
         rely = 0.53,
         relwidth = 0.365
     )
-    #Label y entry de la FECHA
+    #Label de la FECHA
     
     self.lb_fecha = ctk.CTkLabel(
         self.tab_parametros.tab(self.tab1),
@@ -587,244 +580,25 @@ def plastico (self):
         relx = 0.60,
         rely = 0.53
     )
-
-
-
-
-
-    #CheckBoxs y label plantas de producción
-    #Label de autorizacion
-    self.lb_autorizacion = ctk.CTkLabel(
-        self.tab_parametros.tab(self.tab1),
-        **style.STYLELABEL,
-        text= "PLANTAS AUTORIZADAS",
-        fg_color="transparent"
-    )
-    self.lb_autorizacion.place(
-        relx = 0.35,
-        rely = 0.60
-    )
-    #Label de plantas de produccion IDEMIA
-    self.lb_produccion = ctk.CTkLabel(
-        self.tab_parametros.tab(self.tab1),
-        **style.STYLELABEL,
-        text= "Producción IDEMIA: ",
-        fg_color="transparent"
-    )
-    self.lb_produccion.place(
-        relx = 0.03,
-        rely = 0.65
-    )
-    #Label de plantas de produccion THALES
-    self.lb_produccion = ctk.CTkLabel(
-        self.tab_parametros.tab(self.tab1),
-        **style.STYLELABEL,
-        text= "Producción THALES: ",
-        fg_color="transparent"
-    )
-    self.lb_produccion.place(
-        relx = 0.03,
-        rely = 0.70
-    )
-    #Label de plantas de realce de IDEMIA
-    self.lb_produccion = ctk.CTkLabel(
-        self.tab_parametros.tab(self.tab1),
-        **style.STYLELABEL,
-        text= "Realce IDEMIA: ",
-        fg_color="transparent"
-    )
-    self.lb_produccion.place(
-        relx = 0.03,
-        rely = 0.75
-    )
-    #Label de plantas de realce de THALES
-    self.lb_produccion = ctk.CTkLabel(
-        self.tab_parametros.tab(self.tab1),
-        **style.STYLELABEL,
-        text= "Realce THALES: ",
-        fg_color="transparent"
-    )
-    self.lb_produccion.place(
-        relx = 0.03,
-        rely = 0.80
-    )
-    #checkBox producción IDEMIA Cali
-    self.idemia_produc_cali_var = ctk.StringVar()
-    self.chk_idemia_produc_cali = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Cali",
-        **style.STYLELABEL,
-        variable = self.idemia_produc_cali_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_produc_cali.place(
-        relx = 0.27,
-        rely = 0.655
-    )
-    #checkBox producción THALES IZTAPALAPA
-    self.thales_produc_iztapalapa_var = ctk.StringVar()
-    self.chk_thales_produc_iztapalapa = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Iztapalapa",
-        **style.STYLELABEL,
-        variable = self.thales_produc_iztapalapa_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_thales_produc_iztapalapa.place(
-        relx = 0.27,
-        rely = 0.705
-    )
-    #checkBox producción THALES ASIA
-    self.thales_produc_asia_var = ctk.StringVar()
-    self.chk_thales_produc_asia = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Asia",
-        **style.STYLELABEL,
-        variable = self.thales_produc_asia_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_thales_produc_asia.place(
-        relx = 0.44,
-        rely = 0.705
-    )
-    #checkBox realce IDEMIA Cali
-    self.idemia_real_cali_var = ctk.StringVar()
-    self.chk_idemia_real_cali = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Cali",
-        **style.STYLELABEL,
-        variable = self.idemia_real_cali_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_real_cali.place(
-        relx = 0.215,
-        rely = 0.755
-    )
-    #checkBox realce IDEMIA BOGOTA
-    self.idemia_real_bogo_var = ctk.StringVar()
-    self.chk_idemia_real_bogo = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Bogotá",
-        **style.STYLELABEL,
-        variable = self.idemia_real_bogo_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_real_bogo.place(
-        relx = 0.31,
-        rely = 0.755
-    )
-    #checkBox realce IDEMIA MEDELLIN
-    self.idemia_real_mede_var = ctk.StringVar()
-    self.chk_idemia_real_mede = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Medellín",
-        **style.STYLELABEL,
-        variable = self.idemia_real_mede_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_real_mede.place(
-        relx = 0.4425,
-        rely = 0.755
-    )
-    #checkBox realce IDEMIA PEREIRA
-    self.idemia_real_pere_var = ctk.StringVar()
-    self.chk_idemia_real_pere = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Pereira",
-        **style.STYLELABEL,
-        variable = self.idemia_real_pere_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_real_pere.place(
-        relx = 0.595,
-        rely = 0.755
-    )
-    #checkBox realce IDEMIA BUCARAMANGA
-    self.idemia_real_buca_var = ctk.StringVar()
-    self.chk_idemia_real_buca = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Buca.",
-        **style.STYLELABEL,
-        variable = self.idemia_real_buca_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_real_buca.place(
-        relx = 0.725,
-        rely = 0.755
-    )
-    #checkBox realce IDEMIA BARRANQUILLA   
-    self.idemia_real_bquilla_var = ctk.StringVar()
-    self.chk_idemia_real_bquilla = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Bquilla.",
-        **style.STYLELABEL,
-        variable = self.idemia_real_bquilla_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_idemia_real_bquilla.place(
-        relx = 0.835,
-        rely = 0.755
-    )
-    #checkBox realce THALES BOGOTA   
-    self.thales_real_bogo_var = ctk.StringVar()
-    self.chk_thales_real_bogo = ctk.CTkCheckBox(
-        self.tab_parametros.tab(self.tab1),
-        text = "Bogotá",
-        **style.STYLELABEL,
-        variable = self.thales_real_bogo_var,
-        onvalue= "1",
-        offvalue= "0",
-        checkbox_width = 20,
-        checkbox_height = 20
-    )
-    self.chk_thales_real_bogo.place(
-        relx = 0.215,
-        rely = 0.805
-    )
-
     #Textbox de las observaciones
     self.tb_observaciones = ctk.CTkTextbox(
         self.tab_parametros.tab(self.tab1),
-        **style.STYLELABEL,
-        height=65
+        **style.STYLELABEL
     )
     self.tb_observaciones.configure(
         font = ("Calibri Bold", 14)
     ) 
     self.tb_observaciones.place(
         relx = 0.03,
-        rely = 0.86,
-        relwidth = 0.94
+        rely = 0.6,
+        relwidth = 0.94,
+        relheight = 0.4
     )
 
-#-------------------------------------------------------------------------
+
+
+
+#----------------------------BOTONES---------------------------------------------
     #Botón que avanza entre los diferentes plasticos
     self.bt_next = ctk.CTkButton(
         self.tab_parametros.tab(self.tab1),
@@ -908,6 +682,18 @@ def plastico (self):
     self.bt_search.place(
         relx = 0.83,
         rely = 0.40
+    )
+    #Botón para ver todos los plasticos
+    self.bt_ver_plasticos = ctk.CTkButton(
+        self.tab_parametros.tab(self.tab1),
+        **style.SMALLBUTTONSTYLE,
+        text = "Todos",
+        command = self.ver_plasticos_con,
+        width= 90
+    )
+    self.bt_ver_plasticos.place(
+        relx = 0.83,
+        rely = 0.47
     )
     
     

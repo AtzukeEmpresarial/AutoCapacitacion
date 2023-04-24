@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import pandas as pd
 from Screens.message.message import alert_message
+from tksheet import Sheet
 
 from constants import style
 from Functions import validations, DBC
@@ -87,7 +88,7 @@ def update_proveedor(self):
     ''' Función que se encarga de guardar los datos ingresados en los campos de
     creación de plantas; guarda en un diccionario los datos en los entry
     para convertirlo en un DataFrame y posteriormente enviarlo a la función
-    de la ODBC que guarda un proveedor.'''
+    de la DBC que guarda un proveedor.'''
 
     self.confirm_action("¿Seguro que desea actualizar este registro?")
     
@@ -131,6 +132,46 @@ def delete_by_id_proveedor(self):
         self.cb_proveedor_planta.configure( values= self.ls_proveedores)
         self.cb_proveedor_planta.update()
         clean_proveedor(self)
+
+def ver_provedores(self):
+    if not self.tabla_provedor:
+        self.df_ver_provedores = DBC.find(self, self.cnx_nac, "PROVEEDORES")
+        #Tabla en la cual se colocan los datos
+        self.sheet_provedores = Sheet(
+            self.tab_parametros.tab(self.tab3),
+            data = self.df_ver_provedores.values.tolist(),# type: ignore
+            headers= self.df_ver_provedores.columns.tolist(),# type: ignore
+            show_x_scrollbar= True,
+            font = style.FONT_NORMAL, 
+            header_font = style.FONT_NORMAL
+        )
+        self.sheet_provedores.place(
+            relx = 0,
+            rely = 0,
+            relwidth = 0.80,
+            relheight = 1
+        )
+        self.tabla_provedor = True
+        #Botón para ver todos los provedores
+        self.bt_guardar_excel_provedores = ctk.CTkButton(
+            self.tab_parametros.tab(self.tab3),
+            **style.SMALLBUTTONSTYLE,
+            text = "A Excel",
+            command = self.df_a_excel_provedores_con,
+            width= 90
+        )
+        self.bt_guardar_excel_provedores.place(
+            relx = 0.83,
+            rely = 0.54
+    )
+    else:
+        self.sheet_provedores.destroy()
+        self.bt_guardar_excel_provedores.destroy()
+        self.tabla_provedor = False
+
+def df_a_excel_provedores(self):
+     DBC.excel(self.df_ver_provedores, "Provedores")
+     self.login_message = alert_message(self,self, "Excel Provedores creado con exito")
 
 def proveedores (self):
     #Carga inicial de proveedores
@@ -312,4 +353,16 @@ def proveedores (self):
     self.bt_edit_proveedor.place(
         relx = 0.83,
         rely = 0.40
+    )
+    #Botón para ver todos los provedores
+    self.bt_ver_provedores = ctk.CTkButton(
+        self.tab_parametros.tab(self.tab3),
+        **style.SMALLBUTTONSTYLE,
+        text = "Todos",
+        command = self.ver_provedores_con,
+        width= 90
+    )
+    self.bt_ver_provedores.place(
+        relx = 0.83,
+        rely = 0.47
     )

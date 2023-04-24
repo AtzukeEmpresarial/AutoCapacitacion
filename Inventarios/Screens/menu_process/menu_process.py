@@ -30,6 +30,8 @@ class menu_process(ctk.CTkFrame):
         self.ls_plasticos =[]
         self.ls_pedidos = []
         self.ls_pedidos_idemia = []
+        self.ls_pedidos_manana = []
+        self.ls_pedidos_tarde = []
         self.ls_proveedores = []
         self.ls_plantas = []
         self.ls_plantas_produccion = []
@@ -112,6 +114,9 @@ class menu_process(ctk.CTkFrame):
         self.df_idemia_agrupado = pd.DataFrame()
         #Creamos una lista con los pedidos de hoy
         self.ls_pedidos_idemia[:] = []
+        self.ls_pedidos_manana[:] = []
+        self.ls_pedidos_tarde[:] = []
+       
         if len(self.et_pedido_thales.get()) != 0:
             self.pedido_thales = int(self.et_pedido_thales.get())
         else:
@@ -125,11 +130,27 @@ class menu_process(ctk.CTkFrame):
         else:
             for i in range(1, int(self.et_numero_pedidos.get())+1):
                 self.ls_pedidos_idemia.append(self.ls_pedidos[1]+i)
-        print(self.ls_pedidos)
-        print(self.pedido_thales)
-        print(self.ls_pedidos_idemia)
+        if len(self.et_pedido_manana.get()) != 0:
+            for i in range(1, int(self.et_numero_pedidos_manana.get())+1):
+                if i == 1:
+                    self.ls_pedidos_manana.append(int(self.et_pedido_manana.get()))
+                else:
+                    self.ls_pedidos_manana.append(int(self.et_pedido_manana.get())+i-1)
+        else:
+            for i in range(1, int(self.et_numero_pedidos_manana.get())+1):
+                self.ls_pedidos_manana.append(self.ls_pedidos[1]+i)
+        if len(self.et_pedido_tarde.get()) != 0:
+            for i in range(1, int(self.et_numero_pedidos_tarde.get())+1):
+                if i == 1:
+                    self.ls_pedidos_tarde.append(int(self.et_pedido_tarde.get()))
+                else:
+                    self.ls_pedidos_tarde.append(int(self.et_pedido_tarde.get())+i-1)
+        else:
+            for i in range(1, int(self.et_numero_pedidos_tarde.get())+1):
+                self.ls_pedidos_tarde.append(self.ls_pedidos[1]+i)
+        
 
-        self.alerta = DBC.daily(self, self.cnx_nac,self.calendario.get_date(), self.pedido_thales, self.ls_pedidos_idemia)
+        self.alerta = DBC.daily(self, self.cnx_nac,self.calendario.get_date(), self.pedido_thales, self.ls_pedidos_idemia, self.ls_pedidos_manana, self.ls_pedidos_tarde)
         #Se crea un tabView para las dos tablas (thales e idemia)
         self.tab_plantas = ctk.CTkTabview(
             self.tab_alimentar.tab(self.tab1),
@@ -208,10 +229,17 @@ class menu_process(ctk.CTkFrame):
         )
     
     def cargar (self):
+        """Se encarga de la carga masiva de realce diario en el inventario (descuenta)"""
         DBC.alimentar_inventario(self, self.cnx_nac, self.df_thales_agrupado, self.df_idemia_agrupado, self.calendario.get_date())
-        DBC.actualizar_ultimo_pedido_thales_idemia(self, self.cnx_nac, self.pedido_thales, self.ls_pedidos_idemia[-1])
+        DBC.actualizar_ultimo_pedido_thales_idemia(self, self.cnx_nac, self.pedido_thales, self.ls_pedidos_idemia[-1], self.ls_pedidos_manana[-1], self.ls_pedidos_tarde[-1])
         self.lb_ultimo_thales_codigo.configure(text = str(self.pedido_thales))
         self.lb_ultimo_idemia_codigo.configure(text = str(self.ls_pedidos_idemia[-1]))
+        self.lb_ultimo_manana_codigo.configure(text = str(self.ls_pedidos_manana[-1]))
+        self.lb_ultimo_tarde_codigo.configure(text = str(self.ls_pedidos_tarde[-1]))
+        DBC.consultar_ultimo_pedido_thales_idemia(self, self.cnx_nac)
+        self.tab_inventarios.destroy()
+        self.inventarios()
+
 
 
     def descarga_diaria (self):
@@ -247,8 +275,8 @@ class menu_process(ctk.CTkFrame):
             fg_color="transparent"
         )
         self.lb_ultimo_thales_codigo.place(
-            relx = 0.065,
-            rely = 0.12
+            relx = 0.063,
+            rely = 0.115
         )
         self.et_pedido_thales = ctk.CTkEntry(
             self.tab_alimentar.tab(self.tab1),
@@ -256,7 +284,7 @@ class menu_process(ctk.CTkFrame):
         )
         self.et_pedido_thales.place(
             relx = 0,
-            rely = 0.17,
+            rely = 0.162,
             relwidth = 0.17,
             relheight = 0.05
         )
@@ -279,7 +307,7 @@ class menu_process(ctk.CTkFrame):
         )
         self.lb_ultimo_idemia_codigo.place(
             relx = 0.055,
-            rely = 0.32
+            rely = 0.31
         )
         self.et_pedido_idemia = ctk.CTkEntry(
             self.tab_alimentar.tab(self.tab1),
@@ -287,7 +315,7 @@ class menu_process(ctk.CTkFrame):
         )
         self.et_pedido_idemia.place(
             relx = 0,
-            rely = 0.37,
+            rely = 0.36,
             relwidth = 0.17,
             relheight = 0.05
         )
@@ -295,12 +323,12 @@ class menu_process(ctk.CTkFrame):
         self.lb_numero_pedidos = ctk.CTkLabel(
             self.tab_alimentar.tab(self.tab1),
             **style.STYLELABEL,
-            text= "# Pedidos\na consultar",
+            text= "# Pedidos: ",
             fg_color="transparent"
         )
         self.lb_numero_pedidos.place(
-            relx = 0.52,
-            rely = 0.1
+            relx = 0,
+            rely = 0.41
         )
         self.et_numero_pedidos = ctk.CTkEntry(
             self.tab_alimentar.tab(self.tab1),
@@ -309,12 +337,119 @@ class menu_process(ctk.CTkFrame):
         self.et_numero_pedidos.delete(0, ctk.END)
         self.et_numero_pedidos.insert(0, str(4))
         self.et_numero_pedidos.place(
-            relx = 0.57,
-            rely = 0.2,
+            relx = 0.14,
+            rely = 0.41,
             relwidth = 0.03,
             relheight = 0.06
         )
-
+        #Labels y entry del ultimo consecutivo de pedidos debito manana
+        self.lb_ultimo_manana = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab1),
+            **style.STYLELABEL,
+            text= "Ultimo pedido\nMañana",
+            fg_color="transparent"
+        )
+        self.lb_ultimo_manana.place(
+            relx = 0.52,
+            rely = 0.1
+        )
+        self.lb_ultimo_manana_codigo = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab1),
+            **style.STYLELABEL,
+            text= str(self.ls_pedidos[2]),
+            fg_color="transparent"
+        )
+        self.lb_ultimo_manana_codigo.place(
+            relx = 0.57,
+            rely = 0.195
+        )
+        self.et_pedido_manana = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab1),
+            placeholder_text = "Pedido inicial M"
+        )
+        self.et_pedido_manana.place(
+            relx = 0.515,
+            rely = 0.245,
+            relwidth = 0.17,
+            relheight = 0.05
+        )
+        #Label y entry de pedidos a consultar para la mañana
+        self.lb_numero_pedidos_manana = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab1),
+            **style.STYLELABEL,
+            text= "# Pedidos: ",
+            fg_color="transparent"
+        )
+        self.lb_numero_pedidos_manana.place(
+            relx = 0.515,
+            rely = 0.295
+        )
+        self.et_numero_pedidos_manana = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab1),
+            placeholder_text = "#"
+        )
+        self.et_numero_pedidos_manana.delete(0, ctk.END)
+        self.et_numero_pedidos_manana.insert(0, str(3))
+        self.et_numero_pedidos_manana.place(
+            relx = 0.655,
+            rely = 0.295,
+            relwidth = 0.03,
+            relheight = 0.06
+        )
+        #Labels y entry del ultimo consecutivo de pedidos debito tarde
+        self.lb_ultimo_tarde = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab1),
+            **style.STYLELABEL,
+            text= "Ultimo pedido\nTarde",
+            fg_color="transparent"
+        )
+        self.lb_ultimo_tarde.place(
+            relx = 0.84,
+            rely = 0.1
+        )
+        self.lb_ultimo_tarde_codigo = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab1),
+            **style.STYLELABEL,
+            text= str(self.ls_pedidos[3]),
+            fg_color="transparent"
+        )
+        self.lb_ultimo_tarde_codigo.place(
+            relx = 0.89,
+            rely = 0.195
+        )
+        self.et_pedido_tarde = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab1),
+            placeholder_text = "Pedido inicial Tr"
+        )
+        self.et_pedido_tarde.place(
+            relx = 0.835,
+            rely = 0.245,
+            relwidth = 0.16,
+            relheight = 0.05
+        )
+        #Label y entry de pedidos a consultar para la mañana
+        self.lb_numero_pedidos_tarde = ctk.CTkLabel(
+            self.tab_alimentar.tab(self.tab1),
+            **style.STYLELABEL,
+            text= "# Pedidos: ",
+            fg_color="transparent"
+        )
+        self.lb_numero_pedidos_tarde.place(
+            relx = 0.835,
+            rely = 0.295
+        )
+        self.et_numero_pedidos_tarde = ctk.CTkEntry(
+            self.tab_alimentar.tab(self.tab1),
+            placeholder_text = "#"
+        )
+        self.et_numero_pedidos_tarde.delete(0, ctk.END)
+        self.et_numero_pedidos_tarde.insert(0, str(3))
+        self.et_numero_pedidos_tarde.place(
+            relx = 0.965,
+            rely = 0.295,
+            relwidth = 0.03,
+            relheight = 0.06
+        )
         #Calendario para seleccionar la fecha
         self.calendario = Calendar(
             self.tab_alimentar.tab(self.tab1), 
@@ -341,7 +476,7 @@ class menu_process(ctk.CTkFrame):
             height= 26
         )
         self.bt_file.place(
-            relx = 0.70,
+            relx = 0.69,
             rely = 0.11
         )
 
@@ -352,14 +487,16 @@ class menu_process(ctk.CTkFrame):
 #___________________Entrada semanal____________________________________________________________
     def import_file(self):
         """
-        Funcion encargada de importar la alimentación del inventario,
+        Funcion encargada de importar el reporte semanal de los provedores,
         transforma la fuente de datos de pandas en un dataframe y lo pone en pantalla
-        en una tabla con tksheet.
+        en una tabla con tksheet, carga los daños, muestras, destruidas y compara
+        los inventarios totales del informe con los del sistema.
         """
         self.path = self.et_file.get()
-        self.temp_file = DBC.import_from_excel(self, self.path, "Feb 06")
+        self.temp_file = DBC.import_from_excel_reporte_semanal(self, self.path, "Feb 06")
         self.df_excel = pd.DataFrame(self.temp_file)
         self.df_excel["SEMANAS INVENTARIO"] = pd.Series([round(val,2) for val in self.df_excel["SEMANAS INVENTARIO"]]) 
+        self.df_excel.drop(["FRANQUICIA","CLASE TARJETA"], axis = 1,inplace=True)
         #Tabla en la cual se colocan los datos
         self.sheet = Sheet(
             self.tab_alimentar.tab(self.tab2),
@@ -375,6 +512,76 @@ class menu_process(ctk.CTkFrame):
             relwidth = 0.95,
             relheight = 0.7
         )
+        #CheckBox Provedor THALES
+        self.thales_semanal_var = ctk.StringVar()
+        self.chk_thales_semanal = ctk.CTkCheckBox(
+            self.tab_alimentar.tab(self.tab2),
+            text = "THALES",
+            **style.STYLELABEL,
+            variable = self.thales_semanal_var,
+            onvalue= "1",
+            offvalue= "0",
+            checkbox_width = 20,
+            checkbox_height = 20
+        )
+        self.chk_thales_semanal.place(
+            relx = 0.3,
+            rely = 0.115
+        )
+        #CheckBox Provedor IDEMIA
+        self.idemia_semanal_var = ctk.StringVar()
+        self.chk_idemia_semanal = ctk.CTkCheckBox(
+            self.tab_alimentar.tab(self.tab2),
+            text = "IDEMIA",
+            **style.STYLELABEL,
+            variable = self.idemia_semanal_var,
+            onvalue= "1",
+            offvalue= "0",
+            checkbox_width = 20,
+            checkbox_height = 20
+        )
+        self.chk_idemia_semanal.place(
+            relx = 0.5,
+            rely = 0.115
+        )
+        #Botón que genera la comparación.
+        self.bt_comparar = ctk.CTkButton(
+            self.tab_alimentar.tab(self.tab2),
+            **style.SMALLBUTTONSTYLE,
+            text = "Comparar",
+            command = self.compare
+        )
+        self.bt_comparar.place(
+            relx = 0.7,
+            rely = 0.11
+        )
+
+    def compare(self):
+        """Función que compara el reporte con el inventario actual y posteriormente lo
+        muestra en una hoja de calculo"""
+
+        if self.chk_thales_semanal.get() == "0" and self.chk_idemia_semanal.get() == "0":
+            self.login_message = alert_message(self,self, "Seleccione un provedor por favor")
+
+        if self.chk_thales_semanal.get() == "1":
+            self.df_comparacion = DBC.comparar_inventarios_thales(self, self.cnx_nac, self.df_excel)
+            self.sheet.destroy()
+            #Tabla en la cual se colocan los datos
+            self.sheet = Sheet(
+                self.tab_alimentar.tab(self.tab2),
+                data = self.df_comparacion.values.tolist(),
+                headers= self.df_comparacion.columns.tolist(),
+                show_x_scrollbar= True,
+                font = style.FONT_NORMAL, 
+                header_font = style.FONT_NORMAL
+            )
+            self.sheet.place(
+                relx = 0.03,
+                rely = 0.3,
+                relwidth = 0.95,
+                relheight = 0.7
+            )
+
 
     def find_file(self):
         """Abre una nueva ventana de busqueda local para indicar la
@@ -384,11 +591,6 @@ class menu_process(ctk.CTkFrame):
         self.et_file.delete(0, ctk.END)
         self.et_file.insert(0,path)
     
-    def load_inventarios(self):
-        """Carga el inventario 0 en la tabla correspondiente de la base de datos"""
-        DBC.load_in_inventariostj(self, self.cnx_nac, self.df_excel_0)
-
-
     def entrada_semanal(self):
         #Inicia el entri donde se colocará la dirección del archivo
         self.et_file = ctk.CTkEntry(
@@ -435,6 +637,11 @@ class menu_process(ctk.CTkFrame):
             relx = 0.03,
             rely = 0.11
         )
+        
+
+
+
+
 
 
 
@@ -476,6 +683,12 @@ class menu_process(ctk.CTkFrame):
             relx = 0.37,
             rely = 0.19
         )
+
+    def load_inventarios(self):
+        """Carga el inventario 0 en la tabla correspondiente de la base de datos"""
+        DBC.load_in_inventariostj(self, self.cnx_nac, self.df_excel_0)
+        self.tab_inventarios.destroy()
+        self.inventarios()
 
     def find_file_0(self):
         """
@@ -872,6 +1085,8 @@ class menu_process(ctk.CTkFrame):
                 DBC.insert(self, self.cnx_nac,traslados_df,"MOVIMIENTOS")
                 DBC.traslado_salida(self, self.cnx_nac, int(self.et_CODINV_traslado.get()), self.cb_planta_salida.get(), self.cb_operador_traslado.get(),int(self.et_cantidad_traslado.get()))
                 self.clean_traslado()
+                self.tab_inventarios.destroy()
+                self.inventarios()
                 self.cfm = False
         else: 
             self.login_message = alert_message(self,self, "La cantidad de plasticos supera el numero de plasticos actuales\n en la planta de salida, por favor verifique el traslado.")
@@ -901,6 +1116,8 @@ class menu_process(ctk.CTkFrame):
         if self.cfm:
             DBC.deshacer_traslado_salida(self, self.cnx_nac, int(self.et_CODINV_traslado.get()), self.cb_planta_salida.get(), self.cb_operador_traslado.get(),int(self.et_cantidad_traslado.get()))
             DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_traslado.get()), "MOVIMIENTOS")
+            self.tab_inventarios.destroy()
+            self.inventarios()
             self.clean_traslado()
     
     def completar_traslado(self):
@@ -912,6 +1129,8 @@ class menu_process(ctk.CTkFrame):
             DBC.marcar_traslado_completo(self, self.cnx_nac, int(self.et_id_traslado.get()), self.calendario_llegada.get_date())
             DBC.deshacer_traslado_salida(self, self.cnx_nac, int(self.et_CODINV_traslado.get()), self.cb_planta_final.get(), self.cb_operador_traslado.get(),int(self.et_cantidad_traslado.get()))
             self.login_message = alert_message(self,self, "Se completó el traslado con exito.")
+            self.tab_inventarios.destroy()
+            self.inventarios()
             self.clean_traslado()
     
     def traslados_pendientes(self):
@@ -1435,6 +1654,8 @@ class menu_process(ctk.CTkFrame):
             DBC.insert(self, self.cnx_nac,pedido_df,"PEDIDOSTJ")
             self.clean_pedido()
             self.cfm = False
+            self.tab_inventarios.destroy()
+            self.inventarios()
     
     def clean_pedido(self):
         '''Limpia la información de los widgets de pedidos'''
@@ -1465,6 +1686,8 @@ class menu_process(ctk.CTkFrame):
             else:
                 DBC.delete(self, self.cnx_nac,"ID", int(self.et_id_pedido.get()), "PEDIDOSTJ")
                 self.clean_pedido()
+                self.tab_inventarios.destroy()
+                self.inventarios()
 
     def entrega(self):
         """Función que se encarga de actualizar la cantidad de plasticos entregados
@@ -1474,6 +1697,8 @@ class menu_process(ctk.CTkFrame):
             DBC.pedidos_parciales(self, self.cnx_nac,int(self.et_id_pedido.get()), int(self.et_cantidad_despachada.get()), int(self.et_CODINV_pedido.get()), self.cb_planta_final_pedido.get(), self.cb_operador_pedido.get())
             self.login_message = alert_message(self,self, "Se completó el traslado con exito.")
             self.search_by_id_pedido()
+            self.tab_inventarios.destroy()
+            self.inventarios()
 
     def completar_pedido(self):
         """Función que se encarga de marcar como completo el pedido"""
@@ -1487,6 +1712,8 @@ class menu_process(ctk.CTkFrame):
                 DBC.completar_pedido(self, self.cnx_nac, int(self.et_id_pedido.get()))
                 self.login_message = alert_message(self,self, "Se completó el pedido con exito.")
                 self.clean_traslado()
+                self.tab_inventarios.destroy()
+                self.inventarios()
 
     def pedidos_pendientes(self):
         """Genera una hoja de calculo sobre los demás widgets que nos muestras
@@ -1554,7 +1781,8 @@ class menu_process(ctk.CTkFrame):
         self.cb_nombre_item = ctk.CTkComboBox(
             self.tab_alimentar.tab(self.tab6),
             values = self.ls_plasticos,
-            variable = self.nombre_item_var
+            variable = self.nombre_item_var,
+            command= self.cargar_id_plastico
         )
         self.cb_nombre_item.place(
             relx = 0.155,
@@ -1596,7 +1824,8 @@ class menu_process(ctk.CTkFrame):
         self.cb_provedor_item = ctk.CTkComboBox(
             self.tab_alimentar.tab(self.tab6),
             values = self.ls_proveedores,
-            variable = self.provedor_item_var
+            variable = self.provedor_item_var,
+            command= self.filtrar_plantas_x_provedor,
         )
         self.cb_provedor_item.place(
             relx = 0.6,
@@ -1617,7 +1846,7 @@ class menu_process(ctk.CTkFrame):
         self.planta_item_var = ctk.StringVar()
         self.cb_planta_item = ctk.CTkComboBox(
             self.tab_alimentar.tab(self.tab6),
-            values = self.ls_plantas,
+            values = [],
             variable = self.planta_item_var
         )
         self.cb_planta_item.place(
@@ -1705,6 +1934,16 @@ class menu_process(ctk.CTkFrame):
             relx = 0.645,
             rely = 0.36
         )
+    
+    def filtrar_plantas_x_provedor(self, provedor):
+        """Genera la lista de plantas para el provedor"""
+        self.cb_planta_item.configure(values = DBC.genera_lista_planta_x_provedor(self.cnx_nac,provedor).to_list())
+        self.cb_planta_item.update()
+    
+    def cargar_id_plastico(self, nombre):
+            """inserta el codinv del plastico seleccionado"""
+            self.et_codinv_item.delete(0, ctk.END)
+            self.et_codinv_item.insert(0, DBC.find_codinv_by_nombre_item(self.cnx_nac,nombre))
 
     def search_by_id_item(self):
         ''' Función que carga los datos de un item según el ID'''
@@ -1756,6 +1995,8 @@ class menu_process(ctk.CTkFrame):
                 self.clean_item()
                 self.cfm = False
                 self.login_message = alert_message(self,self, "Se registro el item con eso.")
+                self.tab_inventarios.destroy()
+                self.inventarios()
         else:
             self.login_message = alert_message(self,self, "¡Ese item ya existe!\n Por favor verifique los datos ingresados")
 
@@ -1801,6 +2042,8 @@ class menu_process(ctk.CTkFrame):
         else:
             self.sheet_items.destroy()
             self.tabla = False
+    
+    
 
         
 
